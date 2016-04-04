@@ -6,7 +6,7 @@ It is a learning project by three people, one of whom is a lame skrub.
 
 Controls:
 
-Global commands:
+Global commands:<br>
 
 Walk:
 Move to another room.
