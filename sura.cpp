@@ -1,4 +1,7 @@
 #include <iostream>
+#include <stdlib.h>
+#include <stdlib.h>
+#include <time.h>
 
 using std::cin;
 using std::cout;
@@ -25,6 +28,9 @@ int getMaxHealth(character c)
 void setup()
 {
     player.health = getMaxHealth(player);
+    cout << "Welcome to Sura!" << endl << endl;
+    cout << "Please allocate your stats:" << endl;
+    cout << "Welcome to Sura!" << endl;
     cout << "Welcome to Sura!" << endl;
 }
 
