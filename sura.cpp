@@ -2,18 +2,19 @@
 #include <stdlib.h>
 #include <stdlib.h>
 #include <time.h>
+#include <algorithm>
 
 using std::cin;
 using std::cout;
 using std::endl;
 using std::string;
+using std::getline;
+using std::transform;
 
-enum Input { QUIT, NOTHING };
+bool shouldExit;
 
 int playerX;
 int playerY;
-
-Input latestInput;
 
 struct item
 {
@@ -41,6 +42,14 @@ struct character
     item items[4];
 } player;
 
+string getInput()
+{
+    string input;
+    getline(cin, input);
+    transform(input.begin(), input.end(), input.begin(), ::tolower);
+    return input;
+}
+
 int getMaxHealth(character c)
 {
     return c.fortitude;
@@ -53,22 +62,47 @@ struct room
 
 void playerMoveNorth()
 {
-    if(playerY >0)
+    if(playerY > 0)
     {
-        playerY --;
+        playerY--;
         cout << "You moved north" << endl;
     }
-        else
-        {
-            cout << "You are already as north as you can get" << endl;
-        }
+    else
+    {
+        cout << "You are already as north as you can go" << endl;
+    }
 }
 //void playerMoveEast;
 //void playerMoveSouth;
 //void playerMoveWest;
 
+void actionNothing() {
+    cout << "You did nothing" << endl;
+}
+
+void actionQuit() {
+    cout << "Are you sure you want to quit? ";
+    string answer = getInput();
+    if(answer.front() == 'y')
+    {
+        shouldExit = true;
+    }
+    else if(answer.front() != 'n')
+    {
+        cout << "Invalid input" << endl;
+        actionQuit();
+    }
+}
+
+string getAction()
+{
+    cout << "What is your action this turn? ";
+    return getInput();
+}
+
 void setup()
 {
+    shouldExit = false;
     player.health = getMaxHealth(player);
     cout << "Welcome to Sura!" << endl << endl;
     cout << "Please allocate your stats:" << endl;
@@ -76,40 +110,33 @@ void setup()
     cout << "Welcome to Sura!" << endl;
 }
 
-void actionNothing() {
-    cout << "You did nothing" << endl;
-}
-
 void mainLoop()
 {
-    switch(latestInput)
+    cout << endl;
+    string input = getAction();
+    
+    if(input == "quit" || input == "exit" || input == "q")
     {
-        case NOTHING:
-            actionNothing();
-            break;
-        default:
-            std::cerr << "invalid Input" << endl;
-            break;
+        actionQuit();
     }
-}
-
-
-Input getInput()
-{
-    cout << "What is your action this turn? ";
-    string input;
-    std::getline(cin, input);
-    latestInput = NOTHING;
-    return NOTHING;
+    else if(input == "nothing" || input == "n")
+    {
+        actionNothing();
+    }
+    else
+    {
+        cout << "Invalid input \"" << input << "\"" << endl;
+        actionNothing();
+    }
 }
 
 int main()
 {
     setup();
-    do
+    while(!shouldExit)
     {
         mainLoop();
-    } while(getInput() != QUIT);
+    }
     
     return 0;
 }
