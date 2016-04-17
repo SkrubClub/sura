@@ -10,6 +10,9 @@ using std::string;
 
 enum Input { QUIT, NOTHING };
 
+int playerX;
+int playerY;
+
 Input latestInput;
 
 struct item
@@ -42,6 +45,27 @@ int getMaxHealth(character c)
 {
     return c.fortitude;
 }
+
+struct room
+{
+    
+} map[4][4];
+
+void playerMoveNorth()
+{
+    if(playerY >0)
+    {
+        playerY --;
+        cout << "You moved north" << endl;
+    }
+        else
+        {
+            cout << "You are already as north as you can get" << endl;
+        }
+}
+//void playerMoveEast;
+//void playerMoveSouth;
+//void playerMoveWest;
 
 void setup()
 {
