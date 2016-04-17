@@ -12,12 +12,30 @@ enum Input { QUIT, NOTHING };
 
 Input latestInput;
 
+struct item
+{
+    string name;
+    string description;
+    int strength;
+    int agility;
+    int fortitude;
+    int health;
+};
+
+struct object
+{
+    string name;
+    string description;
+    void (*interact)();
+};
+
 struct character
 {
     int strength = 10;
     int agility = 10;
     int fortitude = 10;
     int health;
+    item items[4];
 } player;
 
 int getMaxHealth(character c)
@@ -34,12 +52,16 @@ void setup()
     cout << "Welcome to Sura!" << endl;
 }
 
+void actionNothing() {
+    cout << "You did nothing" << endl;
+}
+
 void mainLoop()
 {
     switch(latestInput)
     {
         case NOTHING:
-            cout << "You did nothing" << endl;
+            actionNothing();
             break;
         default:
             std::cerr << "invalid Input" << endl;
