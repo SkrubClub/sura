@@ -50,6 +50,27 @@ string getInput()
     return input;
 }
 
+bool getYesNo()
+{
+    string answer;
+    while(true)
+    {
+        answer = getInput();
+        if(answer.front() == 'y')
+        {
+            return true;
+        }
+        else if(answer.front() == 'n')
+        {
+            return false;
+        }
+        else
+        {
+            cout << "Invalid input \"" << answer << "\". Please answer yes/no/y/n: " << endl;
+        }
+    }
+}
+
 int getMaxHealth(character c)
 {
     return c.fortitude;
@@ -82,16 +103,7 @@ void actionNothing() {
 
 void actionQuit() {
     cout << "Are you sure you want to quit? ";
-    string answer = getInput();
-    if(answer.front() == 'y')
-    {
-        shouldExit = true;
-    }
-    else if(answer.front() != 'n')
-    {
-        cout << "Invalid input" << endl;
-        actionQuit();
-    }
+    shouldExit = getYesNo();
 }
 
 string getAction()
