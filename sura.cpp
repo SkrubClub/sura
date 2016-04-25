@@ -13,9 +13,6 @@ using std::transform;
 
 bool shouldExit;
 
-int playerX;
-int playerY;
-
 struct item
 {
     string name;
@@ -24,6 +21,7 @@ struct item
     int agility;
     int fortitude;
     int health;
+    int damage;
 };
 
 struct object
@@ -33,14 +31,25 @@ struct object
     void (*interact)();
 };
 
+struct playercharacter
+{
+    int x;
+    int y;
+    int strength;
+    int agility;
+    int fortitude;
+    int maxHealth;
+    int health;
+    int damage;
+    item items[16];
+} player;
+
 struct character
 {
-    int strength = 10;
-    int agility = 10;
-    int fortitude = 10;
+    int damage;
+    int maxHealth;
     int health;
-    item items[4];
-} player;
+};
 
 string getInput()
 {
@@ -56,11 +65,11 @@ bool getYesNo()
     while(true)
     {
         answer = getInput();
-        if(answer.front() == 'y')
+        if(answer.at(0) == 'y')
         {
             return true;
         }
-        else if(answer.front() == 'n')
+        else if(answer.at(0) == 'n')
         {
             return false;
         }
@@ -71,9 +80,9 @@ bool getYesNo()
     }
 }
 
-int getMaxHealth(character c)
+int getMaxHealth()
 {
-    return c.fortitude;
+    return player.fortitude;
 }
 
 struct room
@@ -83,25 +92,27 @@ struct room
 
 void playerMoveNorth()
 {
-    if(playerY > 0)
+    if(player.y > 0)
     {
-        playerY--;
+        player.y--;
         cout << "You moved north" << endl;
     }
     else
     {
-        cout << "You are already as north as you can go" << endl;
+        cout << "You are already as far north as you can go" << endl;
     }
 }
 //void playerMoveEast;
 //void playerMoveSouth;
 //void playerMoveWest;
 
-void actionNothing() {
+void actionNothing()
+{
     cout << "You did nothing" << endl;
 }
 
-void actionQuit() {
+void actionQuit()
+{
     cout << "Are you sure you want to quit? ";
     shouldExit = getYesNo();
 }
@@ -115,7 +126,9 @@ string getAction()
 void setup()
 {
     shouldExit = false;
-    player.health = getMaxHealth(player);
+    player.maxHealth = getMaxHealth();
+    player.health = player.maxHealth;
+    
     cout << "Welcome to Sura!" << endl << endl;
     cout << "Please allocate your stats:" << endl;
     cout << "Welcome to Sura!" << endl;
@@ -142,6 +155,11 @@ void mainLoop()
     }
 }
 
+void endgame()
+{
+    
+}
+
 int main()
 {
     setup();
@@ -149,6 +167,6 @@ int main()
     {
         mainLoop();
     }
-    
+    endgame();
     return 0;
 }
