@@ -1,8 +1,8 @@
 #include <iostream>
 #include <stdlib.h>
-#include <stdlib.h>
 #include <time.h>
 #include <algorithm>
+#include <cstdio>
 
 using std::cin;
 using std::cout;
@@ -50,6 +50,21 @@ struct character
     int maxHealth;
     int health;
 };
+
+string getHealthBar(int health, int maxHealth)
+{
+    string healthBar = "[";
+    for(int i = 0; i < health; i++)
+    {
+        healthBar += "=";
+    }
+    for(int i = 0; i < maxHealth - health; i++)
+    {
+        healthBar += " ";
+    }
+    healthBar += "]";
+    return healthBar;
+}
 
 string getInput()
 {
@@ -106,6 +121,22 @@ void playerMoveNorth()
 //void playerMoveSouth;
 //void playerMoveWest;
 
+void inspectSelf()
+{
+    printf("-- Stats --\n");
+    printf("Fortitude:%4i    Health:%6s %s\n", player.fortitude, player.health + "/" + player.maxHealth, getHealthBar(player.health, player.maxHealth).c_str());
+    printf("Strength:%5i    Damage:%6i\n", player.strength, player.damage);
+    printf("Agility:%6i\n", player.agility);
+}
+
+void actionInspect(string inspection)
+{
+    if(inspection == "self")
+    {
+        inspectSelf();
+    }
+}
+
 void actionNothing()
 {
     cout << "You did nothing" << endl;
@@ -140,7 +171,11 @@ void mainLoop()
     cout << endl;
     string input = getAction();
     
-    if(input == "quit" || input == "exit" || input == "q")
+    if(input.substr(0, 8) == "inspect ")
+    {
+        actionInspect(input.substr(8));
+    }
+    else if(input == "quit" || input == "exit" || input == "q")
     {
         actionQuit();
     }
