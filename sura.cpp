@@ -106,7 +106,7 @@ void playerMoveNorth()
 
 void playerMoveEast()
 {
-    if(player.x > 0)
+    if(player.x < 3)
     {
         player.x++;
         cout << "You moved east" << endl;
@@ -119,7 +119,7 @@ void playerMoveEast()
 
 void playerMoveSouth()
 {
-    if(player.y > 0)
+    if(player.y < 3)
     {
         player.y++;
         cout << "You moved south" << endl;
