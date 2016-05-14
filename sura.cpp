@@ -102,7 +102,8 @@ int getMaxHealth()
 
 struct room
 {
-    
+    item items[16];
+    object objects[16];
 } map[4][4];
 
 void playerMoveNorth()
@@ -117,9 +118,45 @@ void playerMoveNorth()
         cout << "You are already as far north as you can go" << endl;
     }
 }
-//void playerMoveEast;
-//void playerMoveSouth;
-//void playerMoveWest;
+
+void playerMoveEast()
+{
+    if(player.x < 3)
+    {
+        player.x++;
+        cout << "You moved east" << endl;
+    }
+    else
+    {
+        cout << "You are already as far east as you can go" << endl;
+    }
+}
+
+void playerMoveSouth()
+{
+    if(player.y < 3)
+    {
+        player.y++;
+        cout << "You moved south" << endl;
+    }
+    else
+    {
+        cout << "You are already as far south as you can go" << endl;
+    }
+}
+
+void playerMoveWest()
+{
+    if(player.x > 0)
+    {
+        player.x--;
+        cout << "You moved west" << endl;
+    }
+    else
+    {
+        cout << "You are already as far west as you can go" << endl;
+    }
+}
 
 void inspectSelf()
 {
