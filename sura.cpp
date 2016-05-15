@@ -158,6 +158,36 @@ void playerMoveWest()
     }
 }
 
+void actionMove(string dir)
+{
+    while(true)
+    {
+        if(dir == "north" || dir == "n")
+        {
+            playerMoveNorth();
+        }
+        else if(dir == "south" || dir == "s")
+        {
+            playerMoveSouth();
+        }
+        else if(dir == "east" || dir == "e")
+        {
+            playerMoveEast();
+        }
+        else if(dir == "west" || dir == "w")
+        {
+            playerMoveWest();
+        }
+        else
+        {
+            cout << "Invalid input. Please enter a cardinal direction to move in: ";
+            dir = getInput();
+            continue;
+        }
+        break;
+    }
+}
+
 void inspectSelf()
 {
     printf("-- Stats --\n");
@@ -166,11 +196,31 @@ void inspectSelf()
     printf("Agility:%6i\n", player.agility);
 }
 
+void inspectRoom()
+{
+    cout << "Items: ";
+    for(int i = 0; i < 16; i++)
+    {
+        //if(map[player.y][player.x].items[i]) // TODO: check null
+        //{
+            if(i > 0)
+            {
+                cout << ", ";
+            }
+            cout << map[player.y][player.x].items[i].name;
+        //}
+    }
+}
+
 void actionInspect(string inspection)
 {
     if(inspection == "self")
     {
         inspectSelf();
+    }
+    else if(inspection == "room")
+    {
+        inspectRoom();
     }
 }
 
@@ -212,7 +262,11 @@ void mainLoop()
     {
         actionInspect(input.substr(8));
     }
-    else if(input == "quit" || input == "exit" || input == "q")
+    else if(input.substr(0, 5) == "move ")
+    {
+        actionMove(input.substr(5));
+    }
+    else if(input == "quit" || input == "q")
     {
         actionQuit();
     }
