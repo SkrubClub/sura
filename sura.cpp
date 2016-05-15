@@ -16,7 +16,6 @@ bool shouldExit;
 struct item
 {
     string name;
-    string description;
     int strength;
     int agility;
     int fortitude;
@@ -106,7 +105,7 @@ void playerMoveNorth()
 
 void playerMoveEast()
 {
-    if(player.x < 3)
+    if(player.x > 0)
     {
         player.x++;
         cout << "You moved east" << endl;
@@ -119,7 +118,7 @@ void playerMoveEast()
 
 void playerMoveSouth()
 {
-    if(player.y < 3)
+    if(player.y > 0)
     {
         player.y++;
         cout << "You moved south" << endl;
@@ -158,6 +157,44 @@ string getAction()
 {
     cout << "What is your action this turn? ";
     return getInput();
+}
+
+void setupMap()     //item starting locations
+{
+    item knife;
+    knife.name = "Knif";
+    knife.damage = 1;
+    map[0][0].items[0] = knif;
+    
+    item leatherArmor;
+    leatherArmor.name = "Leather Armor";
+    leatherArmor.health = 5;
+    map[1][1].items[0] = leatherArmor;
+    
+    item shield;
+    shield.name = "Shield";
+    shield.health = 3;
+    map[2][1].item[0];
+    
+    item shield;
+    shield.name = "Shield";
+    shield.health = 3;
+    map[1][2].item[0];
+    
+    item iornArmor;
+    iornArmor.name = "Iorn Armor";
+    iornArmor.health = 10;
+    map[2][2].item[0];
+    
+    item sword;
+    sword.name = "Sword";
+    sword.damage = 5;
+    map[3][2].item[0];
+    
+    item axe;
+    axe.name = "Axe";
+    axe.damage = 5;
+    map[2][3].item[0];
 }
 
 void setup()
