@@ -17,9 +17,6 @@ using std::transform;
 
 bool shouldExit;
 
-int playerX;
-int playerY;
-
 struct item
 {
     string name;
@@ -28,6 +25,7 @@ struct item
     int agility;
     int fortitude;
     int health;
+    int damage;
 };
 
 struct object
@@ -37,7 +35,7 @@ struct object
     void (*interact)();
 };
 
-struct character
+struct playercharacter
 {
     // Attributes
     int strength = 0;
@@ -104,8 +102,17 @@ struct character
 
     int level = 1;
     int freePoints = 10;
-    item items[4];
+    int x;
+    int y;
+    item items[16];
 } player;
+
+struct character
+{
+    int damage;
+    int maxHealth;
+    int health;
+};
 
 string getInput()
 {
@@ -115,9 +122,30 @@ string getInput()
     return input;
 }
 
-int getMaxHealth(character c)
+bool getYesNo()
 {
-    return c.fortitude*3 + 1;
+    string answer;
+    while(true)
+    {
+        answer = getInput();
+        if(answer.at(0) == 'y')
+        {
+            return true;
+        }
+        else if(answer.at(0) == 'n')
+        {
+            return false;
+        }
+        else
+        {
+            cout << "Invalid input \"" << answer << "\". Please answer yes/no/y/n: " << endl;
+        }
+    }
+}
+
+int getMaxHealth()
+{
+    return player.fortitude*3 + 1;
 }
 
 struct room
@@ -127,36 +155,29 @@ struct room
 
 void playerMoveNorth()
 {
-    if(playerY > 0)
+    if(player.y > 0)
     {
-        playerY--;
+        player.y--;
         cout << "You moved north" << endl;
     }
     else
     {
-        cout << "You are already as north as you can go" << endl;
+        cout << "You are already as far north as you can go" << endl;
     }
 }
 //void playerMoveEast;
 //void playerMoveSouth;
 //void playerMoveWest;
 
-void actionNothing() {
+void actionNothing()
+{
     cout << "You did nothing" << endl;
 }
 
-void actionQuit() {
+void actionQuit()
+{
     cout << "Are you sure you want to quit? ";
-    string answer = getInput();
-    if(answer.front() == 'y')
-    {
-        shouldExit = true;
-    }
-    else if(answer.front() != 'n')
-    {
-        cout << "Invalid input" << endl;
-        actionQuit();
-    }
+    shouldExit = getYesNo();
 }
 
 string getAction()
@@ -171,6 +192,8 @@ void setup()
     int prevAmnt = 0;
     string input;
     string tempInput;
+
+    shouldExit = false;
 
     cout << "Welcome to Sura!" << endl << endl;
     cout << "Please allocate your stats:" << endl << endl;
@@ -246,17 +269,17 @@ void applyTraits(character c)
     if (c.intellect < 0) {c.freePoints -= c.intellect; c.intellect = 0;}
     */
 
-    c.trait[0] = isBelowMin(c.level, c.strength);
-    if (c.strength <= c.level*0.8 - 6) {c.trait[0] = 1;}
-    if (c.dexterity <= c.level*0.8 - 6) {c.trait[1] = 1;}
-    if (c.fortitude <= c.level*0.8 - 6) {c.trait[2] = 1;}
-    if (c.agility <= c.level*0.8 - 6) {c.trait[3] = 1;}
-    if (c.intellect <= c.level*0.8 - 6) {c.trait[4] = 1;}
-    if (c.strength >= c.level*1.25 + 3) {c.trait[5] = 1;}
-    if (c.dexterity >= c.level*1.25 + 3) {c.trait[6] = 1;}
-    if (c.fortitude >= c.level*1.25 + 3) {c.trait[7] = 1;}
-    if (c.agility <= c.level*0.8 - 6) {c.trait[8] = 1;}
-    if (c.intellect >= c.level*1.25 + 3) {c.trait[9] = 1;}
+    player.trait[0] = isBelowMin(player.level, player.strength);
+    if (player.strength <= player.level*0.8 - 6) {player.trait[0] = 1;}
+    if (player.dexterity <= player.level*0.8 - 6) {player.trait[1] = 1;}
+    if (player.fortitude <= player.level*0.8 - 6) {player.trait[2] = 1;}
+    if (player.agility <= player.level*0.8 - 6) {player.trait[3] = 1;}
+    if (player.intellect <= player.level*0.8 - 6) {player.trait[4] = 1;}
+    if (player.strength >= player.level*1.25 + 3) {player.trait[5] = 1;}
+    if (player.dexterity >= player.level*1.25 + 3) {player.trait[6] = 1;}
+    if (player.fortitude >= player.level*1.25 + 3) {player.trait[7] = 1;}
+    if (player.agility <= player.level*0.8 - 6) {player.trait[8] = 1;}
+    if (player.intellect >= player.level*1.25 + 3) {player.trait[9] = 1;}
 }
 
 void mainLoop()
@@ -279,6 +302,11 @@ void mainLoop()
     }
 }
 
+void endgame()
+{
+
+}
+
 int main()
 {
     setup();
@@ -287,5 +315,6 @@ int main()
         mainLoop();
     }
 
+    endgame();
     return 0;
 }
