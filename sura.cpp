@@ -201,14 +201,14 @@ void inspectRoom()
     cout << "Items: ";
     for(int i = 0; i < 16; i++)
     {
-        //if(map[player.y][player.x].items[i]) // TODO: check null
-        //{
+        if(map[player.y][player.x].items[i].name.length() > 0)
+        {
             if(i > 0)
             {
                 cout << ", ";
             }
             cout << map[player.y][player.x].items[i].name;
-        //}
+        }
     }
 }
 
