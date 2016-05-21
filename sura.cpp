@@ -22,7 +22,7 @@ struct item
     int fortitude;
     int health;
     int damage;
-};
+} emptyItem;
 
 struct object
 {
@@ -221,6 +221,30 @@ void actionInspect(string inspection)
     else if(inspection == "room")
     {
         inspectRoom();
+    }
+}
+
+void actionPickup(string name)
+{
+    for(int i = 0; i < 16; i++)
+    {
+        if(map[player.y][player.x].items[i].name == name)
+        {
+            for(int j = 0; j < 16; j++)
+            {
+                if(player.items[j].name.length == 0)
+                {
+                    player.items[j] = map[player.y][player.x].items[i];
+                    map[player.y][player.x].items[i] = emptyItem;
+                    break;
+                }
+                if(j == 15)
+                {
+                    cout << "Your inventory is full" << endl;
+                }
+            }
+            break;
+        }
     }
 }
 
