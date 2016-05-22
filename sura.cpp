@@ -248,6 +248,30 @@ void actionPickup(string name)
     }
 }
 
+void actionDrop(string name)
+{
+    for(int i = 0; i < 16; i++)
+    {
+        if(player.items[i].name == name)
+        {
+            for(int j = 0; j < 16; j++)
+            {
+                if(map[player.y][player.x].items[j].name.length == 0)
+                {
+                    map[player.y][player.x].items[j] = player.items[i];
+                    player.items[i] = emptyItem;
+                    break;
+                }
+                if(j == 15)
+                {
+                    cout << "The room is full, you can not drop your item." << endl;
+                }
+            }
+            break;
+        }
+    }
+}
+
 void actionNothing()
 {
     cout << "You did nothing" << endl;
@@ -289,6 +313,14 @@ void mainLoop()
     else if(input.substr(0, 5) == "move ")
     {
         actionMove(input.substr(5));
+    }
+    else if(input.substr(0, 7) == "pickup ")
+    {
+        actionPickup(input.substr(7));
+    }
+    else if(input.substr(0, 5) == "drop ")
+    {
+        actionDrop(input.substr(5));
     }
     else if(input == "quit" || input == "q")
     {
