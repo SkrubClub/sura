@@ -1,8 +1,8 @@
 #include <iostream>
 #include <stdlib.h>
-#include <stdlib.h>
 #include <time.h>
 #include <algorithm>
+#include <cstdio>
 
 using std::cin;
 using std::cout;
@@ -21,7 +21,7 @@ struct item
     int fortitude;
     int health;
     int damage;
-};
+} emptyItem;
 
 struct object
 {
@@ -49,6 +49,21 @@ struct character
     int maxHealth;
     int health;
 };
+
+string getHealthBar(int health, int maxHealth)
+{
+    string healthBar = "[";
+    for(int i = 0; i < health; i++)
+    {
+        healthBar += "=";
+    }
+    for(int i = 0; i < maxHealth - health; i++)
+    {
+        healthBar += " ";
+    }
+    healthBar += "]";
+    return healthBar;
+}
 
 string getInput()
 {
@@ -142,6 +157,120 @@ void playerMoveWest()
     }
 }
 
+void actionMove(string dir)
+{
+    while(true)
+    {
+        if(dir == "north" || dir == "n")
+        {
+            playerMoveNorth();
+        }
+        else if(dir == "south" || dir == "s")
+        {
+            playerMoveSouth();
+        }
+        else if(dir == "east" || dir == "e")
+        {
+            playerMoveEast();
+        }
+        else if(dir == "west" || dir == "w")
+        {
+            playerMoveWest();
+        }
+        else
+        {
+            cout << "Invalid input. Please enter a cardinal direction to move in: ";
+            dir = getInput();
+            continue;
+        }
+        break;
+    }
+}
+
+void inspectSelf()
+{
+    printf("-- Stats --\n");
+    printf("Fortitude:%4i    Health:%6s %s\n", player.fortitude, player.health + "/" + player.maxHealth, getHealthBar(player.health, player.maxHealth).c_str());
+    printf("Strength:%5i    Damage:%6i\n", player.strength, player.damage);
+    printf("Agility:%6i\n", player.agility);
+}
+
+void inspectRoom()
+{
+    cout << "Items: ";
+    for(int i = 0; i < 16; i++)
+    {
+        if(map[player.y][player.x].items[i].name.length() > 0)
+        {
+            if(i > 0)
+            {
+                cout << ", ";
+            }
+            cout << map[player.y][player.x].items[i].name;
+        }
+    }
+}
+
+void actionInspect(string inspection)
+{
+    if(inspection == "self")
+    {
+        inspectSelf();
+    }
+    else if(inspection == "room")
+    {
+        inspectRoom();
+    }
+}
+
+void actionPickup(string name)
+{
+    for(int i = 0; i < 16; i++)
+    {
+        if(map[player.y][player.x].items[i].name == name)
+        {
+            for(int j = 0; j < 16; j++)
+            {
+                if(player.items[j].name.length == 0)
+                {
+                    player.items[j] = map[player.y][player.x].items[i];
+                    map[player.y][player.x].items[i] = emptyItem;
+                    break;
+                }
+                if(j == 15)
+                {
+                    cout << "Your inventory is full" << endl;
+                }
+            }
+            break;
+        }
+    }
+}
+
+void actionDrop(string name)
+{
+    for(int i = 0; i < 16; i++)
+    {
+        if(player.items[i].name == name)
+        {
+            for(int j = 0; j < 16; j++)
+            {
+                if(map[player.y][player.x].items[j].name.length == 0)
+                {
+                    map[player.y][player.x].items[j] = player.items[i];
+                    player.items[i] = emptyItem;
+                    break;
+                }
+                if(j == 15)
+                {
+                    cout << "The room is full, you can not drop your item." << endl;
+                }
+            }
+            break;
+        }
+    }
+}
+
 void actionNothing()
 {
     cout << "You did nothing" << endl;
@@ -214,7 +343,23 @@ void mainLoop()
     cout << endl;
     string input = getAction();
     
-    if(input == "quit" || input == "exit" || input == "q")
+    if(input.substr(0, 8) == "inspect ")
+    {
+        actionInspect(input.substr(8));
+    }
+    else if(input.substr(0, 5) == "move ")
+    {
+        actionMove(input.substr(5));
+    }
+    else if(input.substr(0, 7) == "pickup ")
+    {
+        actionPickup(input.substr(7));
+    }
+    else if(input.substr(0, 5) == "drop ")
+    {
+        actionDrop(input.substr(5));
+    }
+    else if(input == "quit" || input == "q")
     {
         actionQuit();
     }
