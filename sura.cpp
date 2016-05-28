@@ -186,6 +186,39 @@ string getAction()
     return getInput();
 }
 
+void resetStatPoints()
+{
+
+}
+
+void allocateStat(string name, int& stat, bool startup)
+{
+    int statInput;
+    int prevAmnt;
+
+    cout << "How many points would you like in " << name << "?" << endl;
+    cin >> statInput;
+    prevAmnt = stat;
+    if(startup)
+    {
+        stat = min(statInput, min(player.freePoints, 6));
+    }
+    else
+    {
+        stat = min(statInput, player.freePoints);
+    }
+
+    player.freePoints -= (stat - prevAmnt);
+}
+
+void allocateStatPoints(bool startup)
+{
+    allocateStat("strength", strength, startup);
+    allocateStat("dexterity", dexterity, startup);
+    allocateStat("fortitude", fortitude, startup);
+    allocateStat("agility", agility, startup);
+}
+
 void setup()
 {
     int statInput = 0;
@@ -206,29 +239,7 @@ void setup()
 
     while (input.front() != 'y')
     {
-        cout << "How many points would you like in strength?" << endl;
-        cin >> statInput;
-        prevAmnt = player.strength;
-        player.strength = min(statInput,min(player.freePoints,3));
-        player.freePoints -= (player.strength-prevAmnt);
-
-        cout << "How many points would you like in dexterity?" << endl;
-        cin >> statInput;
-        prevAmnt = player.dexterity;
-        player.dexterity = min(statInput,min(player.freePoints,3));
-        player.freePoints -= (player.dexterity-prevAmnt);
-
-        cout << "How many points would you like in fortitude?" << endl;
-        cin >> statInput;
-        prevAmnt = player.dexterity;
-        player.fortitude = min(statInput,min(player.freePoints,3));
-        player.freePoints -= (player.dexterity-prevAmnt);
-
-        cout << "How many points would you like in agility?" << endl;
-        cin >> statInput;
-        prevAmnt = player.agility;
-        player.agility = min(statInput,min(player.freePoints,3));
-        player.freePoints -= (player.agility-prevAmnt);
+        allocateStatPoints(true)
 
         cin.sync();
 
@@ -238,6 +249,7 @@ void setup()
         cout << "Fortitude: " << player.fortitude << endl;
         cout << "Agility: " << player.agility << endl;
         cout << "Unallocated points: " << player.freePoints << endl << endl;
+        //cout << "Allocated skill points: " << player.strength+player.dexterity+player.fortitude+player.agility << endl << endl;
         cout << "Would you like to proceed?" << endl;
         //getInput();
         input = getInput();
@@ -256,6 +268,31 @@ bool isBelowMin(int level, int stat)
     return stat <= level * 0.8 - 6;
 }
 
+bool isAboveMax(int level, int stat)
+{
+    return stat >= level * 1.25 + 3;
+}
+
+/*
+
+int isAboveMax(int level, int stat)
+{
+    if (stat < level*2)
+    {
+        int threshold = 10;
+
+        while(stat > level*(1+(1/(threshold-1))))
+        {
+            threshold -= 1;
+        } else
+        {
+            return 11-threshold;
+        }
+    }
+}
+
+*/
+
 void applyTraits(character c)
 {
     /*
@@ -270,16 +307,13 @@ void applyTraits(character c)
     */
 
     player.trait[0] = isBelowMin(player.level, player.strength);
-    if (player.strength <= player.level*0.8 - 6) {player.trait[0] = 1;}
-    if (player.dexterity <= player.level*0.8 - 6) {player.trait[1] = 1;}
-    if (player.fortitude <= player.level*0.8 - 6) {player.trait[2] = 1;}
-    if (player.agility <= player.level*0.8 - 6) {player.trait[3] = 1;}
-    if (player.intellect <= player.level*0.8 - 6) {player.trait[4] = 1;}
-    if (player.strength >= player.level*1.25 + 3) {player.trait[5] = 1;}
-    if (player.dexterity >= player.level*1.25 + 3) {player.trait[6] = 1;}
-    if (player.fortitude >= player.level*1.25 + 3) {player.trait[7] = 1;}
-    if (player.agility <= player.level*0.8 - 6) {player.trait[8] = 1;}
-    if (player.intellect >= player.level*1.25 + 3) {player.trait[9] = 1;}
+    player.trait[0] = isBelowMin(player.level, player.dexterity);
+    player.trait[0] = isBelowMin(player.level, player.fortitude);
+    player.trait[0] = isBelowMin(player.level, player.agility);
+    player.trait[0] = isAboveMax(player.level, player.strength);
+    player.trait[0] = isAboveMax(player.level, player.dexterity);
+    player.trait[0] = isAboveMax(player.level, player.fortitude);
+    player.trait[0] = isAboveMax(player.level, player.agility);
 }
 
 void mainLoop()
