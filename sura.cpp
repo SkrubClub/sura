@@ -94,6 +94,15 @@ bool getYesNo()
     }
 }
 
+bool strEquals( const std::string& str1, const std::string& str2 ) {
+    std::string str1Cpy( str1 );
+    std::string str2Cpy( str2 );
+    std::transform( str1Cpy.begin(), str1Cpy.end(), str1Cpy.begin(), ::tolower );
+    std::transform( str2Cpy.begin(), str2Cpy.end(), str2Cpy.begin(), ::tolower );
+    return ( str1Cpy == str2Cpy );
+}
+
+
 int getMaxHealth()
 {
     return player.fortitude;
@@ -120,7 +129,7 @@ void playerMoveNorth()
 
 void playerMoveEast()
 {
-    if(player.x > 0)
+    if(player.x < 3)
     {
         player.x++;
         cout << "You moved east" << endl;
@@ -133,7 +142,7 @@ void playerMoveEast()
 
 void playerMoveSouth()
 {
-    if(player.y > 0)
+    if(player.y < 3)
     {
         player.y++;
         cout << "You moved south" << endl;
@@ -193,6 +202,19 @@ void inspectSelf()
     printf("Fortitude:%4i    Health:%6s %s\n", player.fortitude, player.health + "/" + player.maxHealth, getHealthBar(player.health, player.maxHealth).c_str());
     printf("Strength:%5i    Damage:%6i\n", player.strength, player.damage);
     printf("Agility:%6i\n", player.agility);
+    
+    cout << "Items: ";
+    for(int i = 0; i < 16; i++)
+    {
+        if(player.items[i].name.length() > 0)
+        {
+            if(i > 0)
+            {
+                cout << ", ";
+            }
+            cout << player.items[i].name;
+        }
+    }
 }
 
 void inspectRoom()
@@ -227,12 +249,13 @@ void actionPickup(string name)
 {
     for(int i = 0; i < 16; i++)
     {
-        if(map[player.y][player.x].items[i].name == name)
+        if(strEquals(map[player.y][player.x].items[i].name, name))
         {
             for(int j = 0; j < 16; j++)
             {
-                if(player.items[j].name.length == 0)
+                if(player.items[j].name.length() == 0)
                 {
+                    cout << "Picked up " << name << endl;
                     player.items[j] = map[player.y][player.x].items[i];
                     map[player.y][player.x].items[i] = emptyItem;
                     break;
@@ -251,12 +274,13 @@ void actionDrop(string name)
 {
     for(int i = 0; i < 16; i++)
     {
-        if(player.items[i].name == name)
+        if(strEquals(player.items[i].name, name))
         {
             for(int j = 0; j < 16; j++)
             {
-                if(map[player.y][player.x].items[j].name.length == 0)
+                if(map[player.y][player.x].items[j].name.length() == 0)
                 {
+                    cout << "Dropped " << name << endl;
                     map[player.y][player.x].items[j] = player.items[i];
                     player.items[i] = emptyItem;
                     break;
@@ -291,9 +315,9 @@ string getAction()
 void setupMap()     //item starting locations
 {
     item knife;
-    knife.name = "Knif";
+    knife.name = "Knife";
     knife.damage = 1;
-    map[0][0].items[0] = knif;
+    map[0][0].items[0] = knife;
     
     item leatherArmor;
     leatherArmor.name = "Leather Armor";
@@ -303,27 +327,23 @@ void setupMap()     //item starting locations
     item shield;
     shield.name = "Shield";
     shield.health = 3;
-    map[2][1].item[0];
-    
-    item shield;
-    shield.name = "Shield";
-    shield.health = 3;
-    map[1][2].item[0];
+    map[2][1].items[0] = shield;
+    map[1][2].items[0] = shield;
     
     item iornArmor;
     iornArmor.name = "Iorn Armor";
     iornArmor.health = 10;
-    map[2][2].item[0];
+    map[2][2].items[0] = iornArmor;
     
     item sword;
     sword.name = "Sword";
     sword.damage = 5;
-    map[3][2].item[0];
+    map[3][2].items[0] = sword;
     
     item axe;
     axe.name = "Axe";
     axe.damage = 5;
-    map[2][3].item[0];
+    map[2][3].items[0] = axe;
 }
 
 void setup()
@@ -331,6 +351,7 @@ void setup()
     shouldExit = false;
     player.maxHealth = getMaxHealth();
     player.health = player.maxHealth;
+    setupMap();
     
     cout << "Welcome to Sura!" << endl << endl;
     cout << "Please allocate your stats:" << endl;
