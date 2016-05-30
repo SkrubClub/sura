@@ -37,12 +37,17 @@ struct object
 
 struct playercharacter
 {
+    int level = 1;
+    int freePoints = 0; // 12 total
     // Attributes
-    int strength = 0;
-    int dexterity = 0;
-    int fortitude = 0;
-    int agility = 0;
+    int strength = 4;
+    int dexterity = 4;
+    int fortitude = 4;
+    int agility = 4;
     int intellect = 2;
+        //int wisdom = 2;
+    float luck = 0;   // Random number from 0-1;
+        //int karma = 0;
 
     /* Traits
 
@@ -62,10 +67,23 @@ struct playercharacter
 
     */
     bool trait[10] = {0,0,0,0,0,0,0,0,0,0};
+    bool oath[10] = {0,0,0,0,0,0,0,0,0,0};
+    /*
+    0 = Oath of The Gentle
+    1 = Oath of The Aimless
+    2 = Oath of The Frail
+    3 = Oath of The Still
+    4 = Oath of The Mindless
+    5 = Oath of The Naive
+    6 = Oath of The Cursed
+    7 = Oath of The Blessed
+    8 = Oath of The Pacifist
+    9 = Oath of The Crusader
+    */
 
     /* Perks
 
-    Experienced
+    Experiencedplayer.
     Lucky
 
     */
@@ -100,8 +118,6 @@ struct playercharacter
     */
     //int
 
-    int level = 1;
-    int freePoints = 10;
     int x;
     int y;
     item items[16];
@@ -188,7 +204,15 @@ string getAction()
 
 void resetStatPoints()
 {
+    player.freePoints += player.strength;
+    player.freePoints += player.dexterity;
+    player.freePoints += player.fortitude;
+    player.freePoints += player.agility;
 
+    player.strength = 0;
+    player.dexterity = 0;
+    player.fortitude = 0;
+    player.agility = 0;
 }
 
 void allocateStat(string name, int& stat, bool startup)
@@ -198,10 +222,12 @@ void allocateStat(string name, int& stat, bool startup)
 
     cout << "How many points would you like in " << name << "?" << endl;
     cin >> statInput;
+    cin.sync();
     prevAmnt = stat;
+
     if(startup)
     {
-        stat = min(statInput, min(player.freePoints, 6));
+        stat = min(statInput, min(player.freePoints, 5));
     }
     else
     {
@@ -213,48 +239,39 @@ void allocateStat(string name, int& stat, bool startup)
 
 void allocateStatPoints(bool startup)
 {
-    allocateStat("strength", strength, startup);
-    allocateStat("dexterity", dexterity, startup);
-    allocateStat("fortitude", fortitude, startup);
-    allocateStat("agility", agility, startup);
+    allocateStat("strength", player.strength, startup);
+    allocateStat("dexterity", player.dexterity, startup);
+    allocateStat("fortitude", player.fortitude, startup);
+    allocateStat("agility", player.agility, startup);
 }
 
 void setup()
 {
-    int statInput = 0;
-    int prevAmnt = 0;
-    string input;
-    string tempInput;
-
     shouldExit = false;
 
     cout << "Welcome to Sura!" << endl << endl;
-    cout << "Please allocate your stats:" << endl << endl;
+    cout << "Your current stats are:" << endl;
     cout << "Strength: " << player.strength << endl;
     cout << "Dexterity: " << player.dexterity << endl;
     cout << "Fortitude: " << player.fortitude << endl;
     cout << "Agility: " << player.agility << endl;
-    cout << "Unallocated skill points: " << player.freePoints << endl << endl;
-    input = 'n';
-
-    while (input.front() != 'y')
+    cout << "Would you like to proceed?" << endl;
+    while (!getYesNo())
     {
-        allocateStatPoints(true)
-
-        cin.sync();
-
+        resetStatPoints();
+        allocateStatPoints(true);
         cout << "Your current stats are:" << endl;
         cout << "Strength: " << player.strength << endl;
         cout << "Dexterity: " << player.dexterity << endl;
         cout << "Fortitude: " << player.fortitude << endl;
         cout << "Agility: " << player.agility << endl;
-        cout << "Unallocated points: " << player.freePoints << endl << endl;
-        //cout << "Allocated skill points: " << player.strength+player.dexterity+player.fortitude+player.agility << endl << endl;
+        cout << "Unallocated points: " << player.freePoints << endl;
+        cout << "Allocated points: " << player.strength+player.dexterity+player.fortitude+player.agility << endl << endl;
+
         cout << "Would you like to proceed?" << endl;
         //getInput();
-        input = getInput();
-        cout << "input = \"" << input << "\"" << endl;
     }
+
     //player.health = getMaxHealth(player);
 }
 
@@ -307,19 +324,20 @@ void applyTraits(character c)
     */
 
     player.trait[0] = isBelowMin(player.level, player.strength);
-    player.trait[0] = isBelowMin(player.level, player.dexterity);
-    player.trait[0] = isBelowMin(player.level, player.fortitude);
-    player.trait[0] = isBelowMin(player.level, player.agility);
-    player.trait[0] = isAboveMax(player.level, player.strength);
-    player.trait[0] = isAboveMax(player.level, player.dexterity);
-    player.trait[0] = isAboveMax(player.level, player.fortitude);
-    player.trait[0] = isAboveMax(player.level, player.agility);
+    player.trait[1] = isBelowMin(player.level, player.dexterity);
+    player.trait[2] = isBelowMin(player.level, player.fortitude);
+    player.trait[3] = isBelowMin(player.level, player.agility);
+    player.trait[4] = isAboveMax(player.level, player.strength);
+    player.trait[5] = isAboveMax(player.level, player.dexterity);
+    player.trait[6] = isAboveMax(player.level, player.fortitude);
+    player.trait[7] = isAboveMax(player.level, player.agility);
 }
 
 void mainLoop()
 {
     cout << endl;
     string input = getAction();
+
 
     if(input == "quit" || input == "exit" || input == "q")
     {
