@@ -98,6 +98,9 @@ struct playercharacter
     // Variables for use with stats
     int critRangeRand;
 
+    int damage;
+    int maxHealth;
+
     int x;
     int y;
     item items[16];
@@ -259,7 +262,7 @@ void actionMove(string dir)
 void inspectSelf()
 {
     printf("-- Stats --\n");
-    printf("Fortitude:%4i    Health:%6s %s\n", player.fortitude, player.health + "/" + player.maxHealth, getHealthBar(player.health, player.maxHealth).c_str());
+    printf("Fortitude:%4i    Health: %02i/%02i %s\n", player.fortitude, player.health, player.maxHealth, getHealthBar(player.health, player.maxHealth).c_str());
     printf("Strength:%5i    Damage:%6i\n", player.strength, player.damage);
     printf("Agility:%6i\n", player.agility);
 
