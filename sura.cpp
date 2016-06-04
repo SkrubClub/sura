@@ -3,12 +3,16 @@
 #include <time.h>
 #include <algorithm>
 #include <cstdio>
+#include <string>
 
 using std::cin;
 using std::cout;
 using std::endl;
-using std::string;
 using std::getline;
+using std::max;
+using std::min;
+using std::size_t;
+using std::string;
 using std::transform;
 
 bool shouldExit;
@@ -32,14 +36,70 @@ struct object
 
 struct playercharacter
 {
+    int level = 1;
+    int freePoints = 0; // 12 total
+    // Attributes
+    int strength = 4;
+    int dexterity = 4;
+    int fortitude = 4;
+    int agility = 4;
+    int intellect = 2;
+        //int wisdom = 2;
+    float luck = 0;   // Random number from 0-1;
+        //int karma = 0;
+
+    /* Traits
+
+    0   feeble      strength < min
+    1   clumsy      dexterity < min
+    2   anorexic    fortitude < min
+    3   sluggish    agility < min
+    4   witless     intellect < min
+    5   muscular    strength > max
+    6   deft        dexterity > max
+    7   healthy     fortitude > max
+    8   nimble      agility > max
+    9   shrewd      intellect > max
+
+    obese       fortitude > strength
+    heavyhanded strength > agility
+
+    */
+    bool trait[10] = { 0,0,0,0,0,0,0,0,0,0 };
+
+    /* Perks
+
+    Experiencedplayer.
+    Lucky
+
+    */
+    // Derived stats
+
+    // Modifiers
+    int damageMod;
+    int weightCapacityMod;
+    int critThresh1Mod;
+    int critThresh2Mod;
+    int healthMod;
+    int actpointMod;
+    int weightMod;
+    int dodgeThresh1Mod;
+    int dodgeThresh2Mod;
+    int movespeedMod;
+
+    // Reduction Modifiers
+    int reduceDamageMod;
+    int reduceActpointMod;
+
+    // Pseudo-stats
+    int health;
+    int actpoint;
+
+    // Variables for use with stats
+    int critRangeRand;
+
     int x;
     int y;
-    int strength;
-    int agility;
-    int fortitude;
-    int maxHealth;
-    int health;
-    int damage;
     item items[16];
 } player;
 
@@ -96,7 +156,7 @@ bool getYesNo()
 
 int getMaxHealth()
 {
-    return player.fortitude;
+    return player.fortitude*3 + 1;
 }
 
 struct room
@@ -294,55 +354,143 @@ void setupMap()     //item starting locations
     knife.name = "Knif";
     knife.damage = 1;
     map[0][0].items[0] = knif;
-    
+
     item leatherArmor;
     leatherArmor.name = "Leather Armor";
     leatherArmor.health = 5;
     map[1][1].items[0] = leatherArmor;
-    
+
     item shield;
     shield.name = "Shield";
     shield.health = 3;
     map[2][1].item[0];
-    
+
     item shield;
     shield.name = "Shield";
     shield.health = 3;
     map[1][2].item[0];
-    
+
     item iornArmor;
     iornArmor.name = "Iorn Armor";
     iornArmor.health = 10;
     map[2][2].item[0];
-    
+
     item sword;
     sword.name = "Sword";
     sword.damage = 5;
     map[3][2].item[0];
-    
+
     item axe;
     axe.name = "Axe";
     axe.damage = 5;
     map[2][3].item[0];
 }
 
+void resetStatPoints()
+{
+    player.freePoints += player.strength;
+    player.freePoints += player.dexterity;
+    player.freePoints += player.fortitude;
+    player.freePoints += player.agility;
+
+    player.strength = 0;
+    player.dexterity = 0;
+    player.fortitude = 0;
+    player.agility = 0;
+}
+
+void allocateStat(string name, int& stat, bool startup)
+{
+    int statInput;
+    int prevAmnt;
+
+    cout << "How many points would you like in " << name << "?" << endl;
+    cin >> statInput;
+    cin.sync();
+    prevAmnt = stat;
+
+    if(startup)
+    {
+        stat = min(statInput, min(player.freePoints, 5));
+    }
+    else
+    {
+        stat = min(statInput, player.freePoints);
+    }
+
+    player.freePoints -= (stat - prevAmnt);
+}
+
+void allocateStatPoints(bool startup)
+{
+    allocateStat("strength", player.strength, startup);
+    allocateStat("dexterity", player.dexterity, startup);
+    allocateStat("fortitude", player.fortitude, startup);
+    allocateStat("agility", player.agility, startup);
+}
+
 void setup()
 {
     shouldExit = false;
-    player.maxHealth = getMaxHealth();
-    player.health = player.maxHealth;
-    
+
     cout << "Welcome to Sura!" << endl << endl;
-    cout << "Please allocate your stats:" << endl;
-    cout << "Welcome to Sura!" << endl;
-    cout << "Welcome to Sura!" << endl;
+    cout << "Your current stats are:" << endl;
+    cout << "Strength: " << player.strength << endl;
+    cout << "Dexterity: " << player.dexterity << endl;
+    cout << "Fortitude: " << player.fortitude << endl;
+    cout << "Agility: " << player.agility << endl;
+    cout << "Would you like to proceed?" << endl;
+    while (!getYesNo())
+    {
+        resetStatPoints();
+        allocateStatPoints(true);
+        cout << "Your current stats are:" << endl;
+        cout << "Strength: " << player.strength << endl;
+        cout << "Dexterity: " << player.dexterity << endl;
+        cout << "Fortitude: " << player.fortitude << endl;
+        cout << "Agility: " << player.agility << endl;
+        cout << "Unallocated points: " << player.freePoints << endl;
+        cout << "Allocated points: " << player.strength+player.dexterity+player.fortitude+player.agility << endl << endl;
+
+        cout << "Would you like to proceed?" << endl;
+        //getInput();
+    }
+
+    //player.health = getMaxHealth(player);
+}
+
+void addStatPoints(int &stat, int amount)
+{
+
+}
+
+bool isBelowMin(int level, int stat)
+{
+    return stat <= level * 0.8 - 6;
+}
+
+bool isAboveMax(int level, int stat)
+{
+    return stat >= level * 1.25 + 3;
+}
+
+void applyTraits(character c)
+{
+    player.trait[0] = isBelowMin(player.level, player.strength);
+    player.trait[1] = isBelowMin(player.level, player.dexterity);
+    player.trait[2] = isBelowMin(player.level, player.fortitude);
+    player.trait[3] = isBelowMin(player.level, player.agility);
+    player.trait[4] = isAboveMax(player.level, player.strength);
+    player.trait[5] = isAboveMax(player.level, player.dexterity);
+    player.trait[6] = isAboveMax(player.level, player.fortitude);
+    player.trait[7] = isAboveMax(player.level, player.agility);
 }
 
 void mainLoop()
 {
     cout << endl;
     string input = getAction();
-    
+
     if(input.substr(0, 8) == "inspect ")
     {
         actionInspect(input.substr(8));
@@ -376,7 +524,7 @@ void mainLoop()
 
 void endgame()
 {
-    
+
 }
 
 int main()
@@ -386,6 +534,7 @@ int main()
     {
         mainLoop();
     }
+
     endgame();
     return 0;
 }
