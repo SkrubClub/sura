@@ -15,7 +15,8 @@ using std::size_t;
 using std::string;
 using std::transform;
 
-bool shouldExit;
+bool shouldQuitGame;
+bool shouldQuitSura;
 
 struct item
 {
@@ -366,7 +367,7 @@ void actionNothing()
 void actionQuit()
 {
     cout << "Are you sure you want to quit? ";
-    shouldExit = getYesNo();
+    shouldQuitGame = getYesNo();
 }
 
 string getAction()
@@ -454,7 +455,7 @@ void allocateStatPoints(bool startup)
 
 void setup()
 {
-    shouldExit = false;
+    shouldQuitGame = false;
     player.maxHealth = getMaxHealth();
     player.health = player.maxHealth;
     setupMap();
@@ -465,7 +466,7 @@ void setup()
     cout << "Dexterity: " << player.dexterity << endl;
     cout << "Fortitude: " << player.fortitude << endl;
     cout << "Agility: " << player.agility << endl;
-    cout << "Would you like to proceed?" << endl;
+    cout << "Would you like to change your stats?" << endl;
     while (!getYesNo())
     {
         resetStatPoints();
@@ -547,17 +548,51 @@ void mainLoop()
 
 void endgame()
 {
+    
+}
 
+void mainMenu()
+{
+    cout << "Welcome to Sura!" << endl << endl;
+    cout << "   ~Play Game~" << endl << "      ~Help~" << endl << "         ~Credits~" << endl << "            ~Quit Sura~" << endl;
+    
+    
+    string input = getInput();
+    
+    if(input == "play game")
+    {
+        setup();
+        while(!shouldQuitGame)
+        {
+            mainLoop();
+        }
+    }
+    else if(input == "help")
+    {
+        cout << "This is a texted based game... Good luck" << endl;
+    }
+    else if(input == "credits")
+    {
+        cout << "SkrubClub" << endl;
+    }
+    else if(input == "quit sura")
+    {
+        shouldQuitSura = true;
+        endgame();
+    }
+    else
+    {
+        cout << "Invalid input \"" << input << "\"" << endl;
+    }
 }
 
 int main()
 {
-    setup();
-    while(!shouldExit)
+    shouldQuitSura = false;
+    while(!shouldQuitSura)
     {
-        mainLoop();
+        mainMenu();
     }
 
-    endgame();
     return 0;
 }
