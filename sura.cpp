@@ -1,8 +1,8 @@
 #include <iostream>
 #include <stdlib.h>
-#include <stdlib.h>
 #include <time.h>
 #include <algorithm>
+#include <cstdio>
 #include <string>
 
 using std::cin;
@@ -20,13 +20,12 @@ bool shouldExit;
 struct item
 {
     string name;
-    string description;
     int strength;
     int agility;
     int fortitude;
     int health;
     int damage;
-};
+} emptyItem;
 
 struct object
 {
@@ -66,20 +65,7 @@ struct playercharacter
     heavyhanded strength > agility
 
     */
-    bool trait[10] = {0,0,0,0,0,0,0,0,0,0};
-    bool oath[10] = {0,0,0,0,0,0,0,0,0,0};
-    /*
-    0 = Oath of The Gentle
-    1 = Oath of The Aimless
-    2 = Oath of The Frail
-    3 = Oath of The Still
-    4 = Oath of The Mindless
-    5 = Oath of The Naive
-    6 = Oath of The Cursed
-    7 = Oath of The Blessed
-    8 = Oath of The Pacifist
-    9 = Oath of The Crusader
-    */
+    bool trait[10] = { 0,0,0,0,0,0,0,0,0,0 };
 
     /* Perks
 
@@ -89,7 +75,7 @@ struct playercharacter
     */
     // Derived stats
 
-        // Modifiers
+    // Modifiers
     int damageMod;
     int weightCapacityMod;
     int critThresh1Mod;
@@ -101,22 +87,19 @@ struct playercharacter
     int dodgeThresh2Mod;
     int movespeedMod;
 
-        // Reduction Modifiers
+    // Reduction Modifiers
     int reduceDamageMod;
     int reduceActpointMod;
 
-        // Pseudo-stats
+    // Pseudo-stats
     int health;
     int actpoint;
 
-        // Variables for use with stats
+    // Variables for use with stats
     int critRangeRand;
-    /*
-    int Base;
-    int Mod;
-    int Total;
-    */
-    //int
+
+    int damage;
+    int maxHealth;
 
     int x;
     int y;
@@ -129,6 +112,21 @@ struct character
     int maxHealth;
     int health;
 };
+
+string getHealthBar(int health, int maxHealth)
+{
+    string healthBar = "[";
+    for(int i = 0; i < health; i++)
+    {
+        healthBar += "=";
+    }
+    for(int i = 0; i < maxHealth - health; i++)
+    {
+        healthBar += " ";
+    }
+    healthBar += "]";
+    return healthBar;
+}
 
 string getInput()
 {
@@ -159,6 +157,15 @@ bool getYesNo()
     }
 }
 
+bool strEquals( const std::string& str1, const std::string& str2 ) {
+    std::string str1Cpy( str1 );
+    std::string str2Cpy( str2 );
+    std::transform( str1Cpy.begin(), str1Cpy.end(), str1Cpy.begin(), ::tolower );
+    std::transform( str2Cpy.begin(), str2Cpy.end(), str2Cpy.begin(), ::tolower );
+    return ( str1Cpy == str2Cpy );
+}
+
+
 int getMaxHealth()
 {
     return player.fortitude*3 + 1;
@@ -166,7 +173,8 @@ int getMaxHealth()
 
 struct room
 {
-
+    item items[16];
+    object objects[16];
 } map[4][4];
 
 void playerMoveNorth()
@@ -181,9 +189,174 @@ void playerMoveNorth()
         cout << "You are already as far north as you can go" << endl;
     }
 }
-//void playerMoveEast;
-//void playerMoveSouth;
-//void playerMoveWest;
+
+void playerMoveEast()
+{
+    if(player.x < 3)
+    {
+        player.x++;
+        cout << "You moved east" << endl;
+    }
+    else
+    {
+        cout << "You are already as far east as you can go" << endl;
+    }
+}
+
+void playerMoveSouth()
+{
+    if(player.y < 3)
+    {
+        player.y++;
+        cout << "You moved south" << endl;
+    }
+    else
+    {
+        cout << "You are already as far south as you can go" << endl;
+    }
+}
+
+void playerMoveWest()
+{
+    if(player.x > 0)
+    {
+        player.x--;
+        cout << "You moved west" << endl;
+    }
+    else
+    {
+        cout << "You are already as far west as you can go" << endl;
+    }
+}
+
+void actionMove(string dir)
+{
+    while(true)
+    {
+        if(dir == "north" || dir == "n")
+        {
+            playerMoveNorth();
+        }
+        else if(dir == "south" || dir == "s")
+        {
+            playerMoveSouth();
+        }
+        else if(dir == "east" || dir == "e")
+        {
+            playerMoveEast();
+        }
+        else if(dir == "west" || dir == "w")
+        {
+            playerMoveWest();
+        }
+        else
+        {
+            cout << "Invalid input. Please enter a cardinal direction to move in: ";
+            dir = getInput();
+            continue;
+        }
+        break;
+    }
+}
+
+void inspectSelf()
+{
+    printf("-- Stats --\n");
+    printf("Fortitude:%4i    Health: %02i/%02i %s\n", player.fortitude, player.health, player.maxHealth, getHealthBar(player.health, player.maxHealth).c_str());
+    printf("Strength:%5i    Damage:%6i\n", player.strength, player.damage);
+    printf("Agility:%6i\n", player.agility);
+
+    cout << "Items: ";
+    for(int i = 0; i < 16; i++)
+    {
+        if(player.items[i].name.length() > 0)
+        {
+            if(i > 0)
+            {
+                cout << ", ";
+            }
+            cout << player.items[i].name;
+        }
+    }
+}
+
+void inspectRoom()
+{
+    cout << "Items: ";
+    for(int i = 0; i < 16; i++)
+    {
+        if(map[player.y][player.x].items[i].name.length() > 0)
+        {
+            if(i > 0)
+            {
+                cout << ", ";
+            }
+            cout << map[player.y][player.x].items[i].name;
+        }
+    }
+}
+
+void actionInspect(string inspection)
+{
+    if(inspection == "self")
+    {
+        inspectSelf();
+    }
+    else if(inspection == "room")
+    {
+        inspectRoom();
+    }
+}
+
+void actionPickup(string name)
+{
+    for(int i = 0; i < 16; i++)
+    {
+        if(strEquals(map[player.y][player.x].items[i].name, name))
+        {
+            for(int j = 0; j < 16; j++)
+            {
+                if(player.items[j].name.length() == 0)
+                {
+                    cout << "Picked up " << name << endl;
+                    player.items[j] = map[player.y][player.x].items[i];
+                    map[player.y][player.x].items[i] = emptyItem;
+                    break;
+                }
+                if(j == 15)
+                {
+                    cout << "Your inventory is full" << endl;
+                }
+            }
+            break;
+        }
+    }
+}
+
+void actionDrop(string name)
+{
+    for(int i = 0; i < 16; i++)
+    {
+        if(strEquals(player.items[i].name, name))
+        {
+            for(int j = 0; j < 16; j++)
+            {
+                if(map[player.y][player.x].items[j].name.length() == 0)
+                {
+                    cout << "Dropped " << name << endl;
+                    map[player.y][player.x].items[j] = player.items[i];
+                    player.items[i] = emptyItem;
+                    break;
+                }
+                if(j == 15)
+                {
+                    cout << "The room is full, you can not drop your item." << endl;
+                }
+            }
+            break;
+        }
+    }
+}
 
 void actionNothing()
 {
@@ -200,6 +373,40 @@ string getAction()
 {
     cout << "What is your action this turn? ";
     return getInput();
+}
+
+void setupMap()     //item starting locations
+{
+    item knife;
+    knife.name = "Knife";
+    knife.damage = 1;
+    map[0][0].items[0] = knife;
+
+    item leatherArmor;
+    leatherArmor.name = "Leather Armor";
+    leatherArmor.health = 5;
+    map[1][1].items[0] = leatherArmor;
+
+    item shield;
+    shield.name = "Shield";
+    shield.health = 3;
+    map[2][1].items[0] = shield;
+    map[1][2].items[0] = shield;
+
+    item ironArmor;
+    ironArmor.name = "Iron Armor";
+    ironArmor.health = 10;
+    map[2][2].items[0] = ironArmor;
+
+    item sword;
+    sword.name = "Sword";
+    sword.damage = 5;
+    map[3][2].items[0] = sword;
+
+    item axe;
+    axe.name = "Axe";
+    axe.damage = 5;
+    map[2][3].items[0] = axe;
 }
 
 void resetStatPoints()
@@ -248,6 +455,9 @@ void allocateStatPoints(bool startup)
 void setup()
 {
     shouldExit = false;
+    player.maxHealth = getMaxHealth();
+    player.health = player.maxHealth;
+    setupMap();
 
     cout << "Welcome to Sura!" << endl << endl;
     cout << "Your current stats are:" << endl;
@@ -269,10 +479,7 @@ void setup()
         cout << "Allocated points: " << player.strength+player.dexterity+player.fortitude+player.agility << endl << endl;
 
         cout << "Would you like to proceed?" << endl;
-        //getInput();
     }
-
-    //player.health = getMaxHealth(player);
 }
 
 void addStatPoints(int &stat, int amount)
@@ -290,39 +497,8 @@ bool isAboveMax(int level, int stat)
     return stat >= level * 1.25 + 3;
 }
 
-/*
-
-int isAboveMax(int level, int stat)
-{
-    if (stat < level*2)
-    {
-        int threshold = 10;
-
-        while(stat > level*(1+(1/(threshold-1))))
-        {
-            threshold -= 1;
-        } else
-        {
-            return 11-threshold;
-        }
-    }
-}
-
-*/
-
 void applyTraits(character c)
 {
-    /*
-    if(c.strength < 0)
-    {
-        c.freePoints -= c.strength;
-        c.strength = 0;
-    }
-    if (c.agility < 0) {c.freePoints -= c.agility; c.agility = 0;}
-    if (c.fortitude < 0) {c.fortitude -= c.strength; c.fortitude = 0;}
-    if (c.intellect < 0) {c.freePoints -= c.intellect; c.intellect = 0;}
-    */
-
     player.trait[0] = isBelowMin(player.level, player.strength);
     player.trait[1] = isBelowMin(player.level, player.dexterity);
     player.trait[2] = isBelowMin(player.level, player.fortitude);
@@ -338,8 +514,23 @@ void mainLoop()
     cout << endl;
     string input = getAction();
 
-
-    if(input == "quit" || input == "exit" || input == "q")
+    if(input.substr(0, 8) == "inspect ")
+    {
+        actionInspect(input.substr(8));
+    }
+    else if(input.substr(0, 5) == "move ")
+    {
+        actionMove(input.substr(5));
+    }
+    else if(input.substr(0, 7) == "pickup ")
+    {
+        actionPickup(input.substr(7));
+    }
+    else if(input.substr(0, 5) == "drop ")
+    {
+        actionDrop(input.substr(5));
+    }
+    else if(input == "quit" || input == "q")
     {
         actionQuit();
     }
