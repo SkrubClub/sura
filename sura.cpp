@@ -187,7 +187,7 @@ void playerMoveNorth()
     }
     else
     {
-        cout << "You are already as far north as you can go" << endl;
+        cout << "You are already as far north as you can move" << endl;
     }
 }
 
@@ -200,7 +200,7 @@ void playerMoveEast()
     }
     else
     {
-        cout << "You are already as far east as you can go" << endl;
+        cout << "You are already as far east as you can move" << endl;
     }
 }
 
@@ -213,7 +213,7 @@ void playerMoveSouth()
     }
     else
     {
-        cout << "You are already as far south as you can go" << endl;
+        cout << "You are already as far south as you can move" << endl;
     }
 }
 
@@ -226,7 +226,7 @@ void playerMoveWest()
     }
     else
     {
-        cout << "You are already as far west as you can go" << endl;
+        cout << "You are already as far west as you can move" << endl;
     }
 }
 
@@ -252,7 +252,7 @@ void actionMove(string dir)
         }
         else
         {
-            cout << "Invalid input. Please enter a cardinal direction to move in: ";
+            cout << "Invalid input.  Please enter a cardinal direction to move in (North/N, East/E, South/S, West/W)." << endl;
             dir = getInput();
             continue;
         }
@@ -573,7 +573,7 @@ void mainMenu()
     }
     else if(input == "credits")
     {
-        cout << "SkrubClub" << endl;
+        cout << "Two guys went over to a skrub's house and decided to learn C++.  The two guys and the one skrub then decided to form SkrubClub, and to make the project, sura, to better learn C++." << endl;
     }
     else if(input == "quit sura")
     {
