@@ -569,7 +569,7 @@ void mainMenu()
     }
     else if(input == "help")
     {
-        cout << "This is a texted based game... Good luck" << endl;
+        cout << "This is a texted based game, enter in sugested input when prompted through the easily interpreted instructions along the way." << endl;
     }
     else if(input == "credits")
     {
