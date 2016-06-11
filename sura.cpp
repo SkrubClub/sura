@@ -15,7 +15,8 @@ using std::size_t;
 using std::string;
 using std::transform;
 
-bool shouldExit;
+bool shouldQuitGame;
+bool shouldQuitSura;
 
 struct item
 {
@@ -97,6 +98,9 @@ struct playercharacter
 
     // Variables for use with stats
     int critRangeRand;
+
+    int damage;
+    int maxHealth;
 
     int x;
     int y;
@@ -183,7 +187,7 @@ void playerMoveNorth()
     }
     else
     {
-        cout << "You are already as far north as you can go" << endl;
+        cout << "You are already as far north as you can move" << endl;
     }
 }
 
@@ -196,7 +200,7 @@ void playerMoveEast()
     }
     else
     {
-        cout << "You are already as far east as you can go" << endl;
+        cout << "You are already as far east as you can move" << endl;
     }
 }
 
@@ -209,7 +213,7 @@ void playerMoveSouth()
     }
     else
     {
-        cout << "You are already as far south as you can go" << endl;
+        cout << "You are already as far south as you can move" << endl;
     }
 }
 
@@ -222,7 +226,7 @@ void playerMoveWest()
     }
     else
     {
-        cout << "You are already as far west as you can go" << endl;
+        cout << "You are already as far west as you can move" << endl;
     }
 }
 
@@ -248,7 +252,7 @@ void actionMove(string dir)
         }
         else
         {
-            cout << "Invalid input. Please enter a cardinal direction to move in: ";
+            cout << "Invalid input.  Please enter a cardinal direction to move in (North/N, East/E, South/S, West/W)." << endl;
             dir = getInput();
             continue;
         }
@@ -259,7 +263,7 @@ void actionMove(string dir)
 void inspectSelf()
 {
     printf("-- Stats --\n");
-    printf("Fortitude:%4i    Health:%6s %s\n", player.fortitude, player.health + "/" + player.maxHealth, getHealthBar(player.health, player.maxHealth).c_str());
+    printf("Fortitude:%4i    Health: %02i/%02i %s\n", player.fortitude, player.health, player.maxHealth, getHealthBar(player.health, player.maxHealth).c_str());
     printf("Strength:%5i    Damage:%6i\n", player.strength, player.damage);
     printf("Agility:%6i\n", player.agility);
 
@@ -363,7 +367,7 @@ void actionNothing()
 void actionQuit()
 {
     cout << "Are you sure you want to quit? ";
-    shouldExit = getYesNo();
+    shouldQuitGame = getYesNo();
 }
 
 string getAction()
@@ -451,7 +455,7 @@ void allocateStatPoints(bool startup)
 
 void setup()
 {
-    shouldExit = false;
+    shouldQuitGame = false;
     player.maxHealth = getMaxHealth();
     player.health = player.maxHealth;
     setupMap();
@@ -506,6 +510,16 @@ void applyTraits(character c)
     player.trait[7] = isAboveMax(player.level, player.agility);
 }
 
+void printHelp()
+{
+    cout << "At the beginning of your turn you have any of the following actions:" << endl << endl;
+    cout << "Movement:" << endl << "\"Move North\" or \"Move N\"." << endl << "\"Move East\" or \"Move E\"." << endl << "\"Move South\" or \"Move S\"." << endl << "\"Move West\" or \"Move W\"." << endl << endl;
+    cout << "Inspection:" << endl << "\"Inspect Room\" (Inspects room for items, objects, and enemies)." << endl << "\"Inspect Self\" (Shows player inventory and stats)" << endl << endl;
+    cout << "Picking up and dropping items:" << endl << "\"PickUp (item name)\"." << endl << "\"Drop (item name)\"." << endl << endl;
+    cout << "Doing nothing (idle) for your turn:" << endl << "\"Nothing\"" << endl << endl;
+    cout << "Quitting game:" <<  endl << "\"Quit\"" << endl << endl;
+}
+
 void mainLoop()
 {
     cout << endl;
@@ -535,6 +549,10 @@ void mainLoop()
     {
         actionNothing();
     }
+    else if(input == "help" || input == "h")
+    {
+        printHelp();
+    }
     else
     {
         cout << "Invalid input \"" << input << "\"" << endl;
@@ -544,17 +562,51 @@ void mainLoop()
 
 void endgame()
 {
+    
+}
 
+void mainMenu()
+{
+    cout << "Welcome to Sura!" << endl << endl;
+    cout << "   ~Play Game~" << endl << "      ~Help~" << endl << "         ~Credits~" << endl << "            ~Quit Sura~" << endl;
+    
+    
+    string input = getInput();
+    
+    if(input == "play game")
+    {
+        setup();
+        while(!shouldQuitGame)
+        {
+            mainLoop();
+        }
+    }
+    else if(input == "help")
+    {
+        printHelp();
+    }
+    else if(input == "credits")
+    {
+        cout << "Two guys went over to a skrub's house and decided to learn C++.  The two guys and the one skrub then decided to form SkrubClub, and to make the project, sura, to better learn C++." << endl;
+    }
+    else if(input == "quit sura")
+    {
+        shouldQuitSura = true;
+        endgame();
+    }
+    else
+    {
+        cout << "Invalid input \"" << input << "\"" << endl;
+    }
 }
 
 int main()
 {
-    setup();
-    while(!shouldExit)
+    shouldQuitSura = false;
+    while(!shouldQuitSura)
     {
-        mainLoop();
+        mainMenu();
     }
 
-    endgame();
     return 0;
 }
