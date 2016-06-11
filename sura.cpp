@@ -27,6 +27,31 @@ struct item
     int damage;
 } emptyItem;
 
+void printItem(item it)
+{
+    cout << it.name << endl;
+    if(it.strength > 0)
+    {
+        cout << "Strength: +" << it.strength;
+    }
+    if(it.agility > 0)
+    {
+        cout << "Agility: +" << it.agility;
+    }
+    if(it.fortitude > 0)
+    {
+        cout << "Fortitude: +" << it.fortitude;
+    }
+    if(it.health > 0)
+    {
+        cout << "Health: +" << it.health;
+    }
+    if(it.damage > 0)
+    {
+        cout << "Damage: +" << it.damage;
+    }
+}
+
 struct object
 {
     string name;
@@ -44,9 +69,9 @@ struct playercharacter
     int fortitude = 4;
     int agility = 4;
     int intellect = 2;
-        //int wisdom = 2;
+    //int wisdom = 2;
     float luck = 0;   // Random number from 0-1;
-        //int karma = 0;
+    //int karma = 0;
 
     /* Traits
 
@@ -306,6 +331,34 @@ void actionInspect(string inspection)
     {
         inspectRoom();
     }
+    else if(inspection.length() > 0)
+    {
+        int i;
+        for(i = 0; i < 16; i++)
+        {
+            if(strEquals(player.items[i].name, inspection))
+            {
+                printItem(player.items[i]);
+            }
+        }
+
+        int j;
+        for(j = 0; j < 16; j++)
+        {
+            if(strEquals(map[player.y][player.x].items[j].name, inspection))
+            {
+                printItem(map[player.y][player.x].items[j]);
+            }
+        }
+        if(i > 15 && j > 15) // TODO: i, j are always 16
+        {
+            cout << "Cannot inspect " << inspection << endl;
+        }
+    }
+    else
+    {
+        cout << "Cannot inspect " << inspection << endl;
+    }
 }
 
 void actionPickup(string name)
@@ -318,7 +371,8 @@ void actionPickup(string name)
             {
                 if(player.items[j].name.length() == 0)
                 {
-                    cout << "Picked up " << name << endl;
+                    cout << "Picked up:" << endl;
+                    printItem(map[player.y][player.x].items[i]);
                     player.items[j] = map[player.y][player.x].items[i];
                     map[player.y][player.x].items[i] = emptyItem;
                     break;
