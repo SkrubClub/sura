@@ -466,7 +466,7 @@ void setup()
     cout << "Dexterity: " << player.dexterity << endl;
     cout << "Fortitude: " << player.fortitude << endl;
     cout << "Agility: " << player.agility << endl;
-    cout << "Would you like to change your stats?" << endl;
+    cout << "Would you like to proceed?" << endl;
     while (!getYesNo())
     {
         resetStatPoints();
@@ -510,6 +510,16 @@ void applyTraits(character c)
     player.trait[7] = isAboveMax(player.level, player.agility);
 }
 
+void printHelp()
+{
+    cout << "At the beginning of your turn you have any of the following actions:" << endl << endl;
+    cout << "Movement:" << endl << "\"Move North\" or \"Move N\"." << endl << "\"Move East\" or \"Move E\"." << endl << "\"Move South\" or \"Move S\"." << endl << "\"Move West\" or \"Move W\"." << endl << endl;
+    cout << "Inspection:" << endl << "\"Inspect Room\" (Inspects room for items, objects, and enemies)." << endl << "\"Inspect Self\" (Shows player inventory and stats)" << endl << endl;
+    cout << "Picking up and dropping items:" << endl << "\"PickUp (item name)\"." << endl << "\"Drop (item name)\"." << endl << endl;
+    cout << "Doing nothing (idle) for your turn:" << endl << "\"Nothing\"" << endl << endl;
+    cout << "Quitting game:" <<  endl << "\"Quit\"" << endl << endl;
+}
+
 void mainLoop()
 {
     cout << endl;
@@ -538,6 +548,10 @@ void mainLoop()
     else if(input == "nothing" || input == "n")
     {
         actionNothing();
+    }
+    else if(input == "help" || input == "h")
+    {
+        printHelp();
     }
     else
     {
@@ -569,7 +583,7 @@ void mainMenu()
     }
     else if(input == "help")
     {
-        cout << "This is a texted based game, enter in sugested input when prompted through the easily interpreted instructions along the way." << endl;
+        printHelp();
     }
     else if(input == "credits")
     {
