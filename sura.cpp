@@ -106,11 +106,13 @@ struct playercharacter
     item items[16];
 } player;
 
-struct character
+struct enemy
 {
+    string name;
     int damage;
     int maxHealth;
     int health;
+    bool first = false;
 };
 
 string getHealthBar(int health, int maxHealth)
@@ -157,24 +159,26 @@ bool getYesNo()
     }
 }
 
-bool strEquals( const std::string& str1, const std::string& str2 ) {
-    std::string str1Cpy( str1 );
-    std::string str2Cpy( str2 );
-    std::transform( str1Cpy.begin(), str1Cpy.end(), str1Cpy.begin(), ::tolower );
-    std::transform( str2Cpy.begin(), str2Cpy.end(), str2Cpy.begin(), ::tolower );
-    return ( str1Cpy == str2Cpy );
+bool strEquals(const std::string& str1, const std::string& str2)
+{
+    string str1Cpy(str1);
+    string str2Cpy(str2);
+    transform(str1Cpy.begin(), str1Cpy.end(), str1Cpy.begin(), ::tolower);
+    transform(str2Cpy.begin(), str2Cpy.end(), str2Cpy.begin(), ::tolower);
+    return (str1Cpy == str2Cpy);
 }
 
 
 int getMaxHealth()
 {
-    return player.fortitude*3 + 1;
+    return player.fortitude * 3 + 1;
 }
 
 struct room
 {
     item items[16];
     object objects[16];
+    enemy enemies[16];
 } map[4][4];
 
 void playerMoveNorth()
@@ -294,6 +298,20 @@ void inspectRoom()
             cout << map[player.y][player.x].items[i].name;
         }
     }
+
+    cout << endl << "Enemies: ";
+    for(int i = 0; i < 16; i++)
+    {
+        if(map[player.y][player.x].enemies[i].name.length() > 0)
+        {
+            if(i > 0)
+            {
+                cout << ", ";
+            }
+            cout << map[player.y][player.x].enemies[i].name;
+        }
+    }
+    cout << endl;
 }
 
 void actionInspect(string inspection)
@@ -321,16 +339,14 @@ void actionPickup(string name)
                     cout << "Picked up " << name << endl;
                     player.items[j] = map[player.y][player.x].items[i];
                     map[player.y][player.x].items[i] = emptyItem;
-                    break;
-                }
-                if(j == 15)
-                {
-                    cout << "Your inventory is full" << endl;
+                    return;
                 }
             }
-            break;
+            cout << "Your inventory is full." << endl;
+            return;
         }
     }
+    cout << "No item \"" << name << "\" found in this room." << endl;
 }
 
 void actionDrop(string name)
@@ -346,21 +362,19 @@ void actionDrop(string name)
                     cout << "Dropped " << name << endl;
                     map[player.y][player.x].items[j] = player.items[i];
                     player.items[i] = emptyItem;
-                    break;
-                }
-                if(j == 15)
-                {
-                    cout << "The room is full, you can not drop your item." << endl;
+                    return;
                 }
             }
-            break;
+            cout << "The room is full, you can not drop your item." << endl;
+            return;
         }
     }
+    cout << "No item \"" << name << "\" found in your inventory." << endl;
 }
 
 void actionNothing()
 {
-    cout << "You did nothing" << endl;
+    cout << "You did nothing." << endl;
 }
 
 void actionQuit()
@@ -375,8 +389,10 @@ string getAction()
     return getInput();
 }
 
-void setupMap()     //item starting locations
+void setupMap()
 {
+    //items
+
     item knife;
     knife.name = "Knife";
     knife.damage = 1;
@@ -407,6 +423,15 @@ void setupMap()     //item starting locations
     axe.name = "Axe";
     axe.damage = 5;
     map[2][3].items[0] = axe;
+
+    //enemies
+
+    enemy worm;
+    worm.name = "Worm";
+    worm.damage = 0;
+    worm.maxHealth = 5;
+    worm.health = worm.maxHealth;
+    map[0][1].enemies[0] = worm;
 }
 
 void resetStatPoints()
@@ -497,7 +522,7 @@ bool isAboveMax(int level, int stat)
     return stat >= level * 1.25 + 3;
 }
 
-void applyTraits(character c)
+void applyTraits()
 {
     player.trait[0] = isBelowMin(player.level, player.strength);
     player.trait[1] = isBelowMin(player.level, player.dexterity);
@@ -509,6 +534,33 @@ void applyTraits(character c)
     player.trait[7] = isAboveMax(player.level, player.agility);
 }
 
+void fight(enemy e)
+{
+    cout << "Entering fight with " << e.name << endl;
+}
+
+void actionFight(string e)
+{
+    for(int i = 0; i < 16; i++)
+    {
+        if(strEquals(map[player.y][player.x].enemies[i].name, e))
+        {
+            cout << "u wanna go m8? fite me. 1v1 noscopes only ";
+            if(getYesNo())
+            {
+                cout << "ok m8E letz go" << endl;
+                fight(map[player.y][player.x].enemies[i]);
+            }
+            else
+            {
+                cout << "wow Wut A. Skrub. thats ur name now. cy(k)a mr. skrub" << endl;
+            }
+            return;
+        }
+    }
+    cout << "No enemy with that name found" << endl;
+}
+
 void mainLoop()
 {
     cout << endl;
@@ -517,6 +569,10 @@ void mainLoop()
     if(input.substr(0, 8) == "inspect ")
     {
         actionInspect(input.substr(8));
+    }
+    else if(input.substr(0, 6) == "fight ")
+    {
+        actionFight(input.substr(6));
     }
     else if(input.substr(0, 5) == "move ")
     {
