@@ -44,7 +44,7 @@ struct playercharacter
     int fortitude = 4;
     int agility = 4;
     int intellect = 2;
-        //int wisdom = 2;
+    int wisdom = 2;
     float luck = 0;   // Random number from 0-1;
         //int karma = 0;
 
@@ -66,11 +66,28 @@ struct playercharacter
 
     */
     bool trait[10] = { 0,0,0,0,0,0,0,0,0,0 };
+    bool oath[10] = {0,0,0,0,0,0,0,0,0,0};
+    /*
+    0 = Oath of The Gentle
+    1 = Oath of The Aimless
+    2 = Oath of The Frail
+    3 = Oath of The Still
+    4 = Oath of The Mindless
+    5 = Oath of The Naive
+    6 = Oath of The Cursed
+    7 = Oath of The Blessed
+    8 = Oath of The Peaceful
+    9 = Oath of The Lonely
+    */
 
     /* Perks
 
-    Experiencedplayer.
-    Lucky
+    Experienced         -       Faster XP gain
+    Handsome            -       More hands
+    Hot Dish            -       "Inspect self"
+    Socially Awkward    -       Speech prompts are randomly selected
+    Lemony              -       Failed procs reduce your chance to suceed future procs
+
 
     */
     // Derived stats
@@ -149,6 +166,68 @@ bool getYesNo()
         else if(answer.at(0) == 'n')
         {
             return false;
+        }
+        else
+        {
+            cout << "Invalid input \"" << answer << "\". Please answer yes/no/y/n: " << endl;
+        }
+    }
+}
+
+bool receiveOath(int oathID, string answer)
+{
+    string oathTitle[10];
+    oathTitle[0] = "Gentle";
+    oathTitle[1] = "Aimless";
+    oathTitle[2] = "Frail";
+    oathTitle[3] = "Still";
+    oathTitle[4] = "Mindless";
+    oathTitle[5] = "Naive";
+    oathTitle[6] = "Cursed";
+    oathTitle[7] = "Blessed";
+    oathTitle[8] = "Peaceful";
+    oathTitle[9] = "Lonely";
+
+    if(strEquals(answer, "oath of the " + oathTitle[oathID]))
+    {
+        player.oath[oathID] = true;
+        cout << endl << "\" " << oathTitle[oathID] << " One. May you be worthy.\"" << endl << endl;
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool getYesNoOaths()
+{
+    string answer;
+    bool oathCheck = true;
+    bool shouldContinue = true;
+    while(shouldContinue)
+    {
+        answer = getInput();
+        if(answer.at(0) == 'y')
+        {
+            return true;
+        }
+        else if(answer.at(0) == 'n')
+        {
+            return false;
+        }
+        else if(answer == "take oath")
+        {
+            cout << endl << "\"Break not that which binds thee.\"" << endl << endl;
+            answer = getInput();
+
+            for(int i = 0; i < 10; i++)
+            {
+                if(receiveOath(i, answer))
+                {
+                    break;
+                }
+            }
         }
         else
         {
@@ -466,7 +545,7 @@ void setup()
     cout << "Fortitude: " << player.fortitude << endl;
     cout << "Agility: " << player.agility << endl;
     cout << "Would you like to proceed?" << endl;
-    while (!getYesNo())
+    while (getYesNoOaths() == false)
     {
         resetStatPoints();
         allocateStatPoints(true);
