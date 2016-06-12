@@ -137,6 +137,12 @@ string getInput()
     return input;
 }
 
+void wait()
+{
+    string s;
+    getline(cin, s);
+}
+
 bool getYesNo()
 {
     string answer;
@@ -518,6 +524,11 @@ void printHelp()
     cout << "Picking up and dropping items:" << endl << "\"PickUp (item name)\"." << endl << "\"Drop (item name)\"." << endl << endl;
     cout << "Doing nothing (idle) for your turn:" << endl << "\"Nothing\"" << endl << endl;
     cout << "Quitting game:" <<  endl << "\"Quit\"" << endl << endl;
+    cout << "In Sura, case never matters. \"move south\" is the same as \"mOvE SoUtH\"." << endl << endl;
+    cout << "Whenever the game asks a yes/no question, you can answer with anything that starts with a 'y' or an 'n'. For example, these are all valid inputs: "
+         << "y, n, yes, no, yeah, nah, yea, nay." << endl;
+
+    wait();
 }
 
 void mainLoop()
@@ -567,32 +578,50 @@ void endgame()
 
 void mainMenu()
 {
-    cout << "Welcome to Sura!" << endl << endl;
-    cout << "   ~Play Game~" << endl << "      ~Help~" << endl << "         ~Credits~" << endl << "            ~Quit Sura~" << endl;
-    
-    
+    cout <<
+                                                        endl <<
+        "     @@@@@@   @@@  @@@  @@@@@@@    @@@@@@ " << endl <<
+        "    @@@@@@@   @@@  @@@  @@@@@@@@  @@@@@@@@" << endl <<
+        "    !@@       @@!  @@@  @@!  @@@  @@!  @@@" << endl <<
+        "    !@!       !@!  @!@  !@!  @!@  !@!  @!@" << endl <<
+        "    !!@@!!    @!@  !@!  @!@!!@!   @!@!@!@!" << endl <<
+        "     !!@!!!   !@!  !!!  !!@!@!    !!!@!!!!" << endl <<
+        "         !:!  !!:  !!!  !!: :!!   !!:  !!!" << endl <<
+        "        !:!   :!:  !:!  :!:  !:!  :!:  !:!" << endl <<
+        "    :::: ::   ::::: ::  ::   :::  ::   :::" << endl <<
+        "    :: : :     : :  :    :   : :   :   : :" << endl <<
+                                                        endl <<
+        "                 ~Play  Game~             " << endl <<
+        "                    ~Help~                " << endl <<
+        "                  ~Credits~               " << endl <<
+        "                 ~Quit  Sura~             " << endl <<
+                                                        endl;
+
     string input = getInput();
-    
-    if(input == "play game")
+
+    if(input == "play game" || input == "p")
     {
         setup();
         while(!shouldQuitGame)
         {
             mainLoop();
         }
+        endgame();
     }
-    else if(input == "help")
+    else if(input == "help" || input == "h")
     {
         printHelp();
     }
-    else if(input == "credits")
+    else if(input == "credits" || input == "c")
     {
         cout << "Two guys went over to a skrub's house and decided to learn C++.  The two guys and the one skrub then decided to form SkrubClub, and to make the project, sura, to better learn C++." << endl;
+        wait();
     }
-    else if(input == "quit sura")
+    else if(input == "quit sura" || input == "q")
     {
-        shouldQuitSura = true;
-        endgame();
+        cout << "Are you sure you want to quit? ";
+        shouldQuitSura = getYesNo();
+        return;
     }
     else
     {
