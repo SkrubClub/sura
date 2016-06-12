@@ -27,7 +27,7 @@ struct item
     int damage;
 } emptyItem;
 
-void printItem(item it)
+void printItem(item it) //prints out the details of the given item
 {
     cout << it.name << endl;
     if(it.strength > 0)
@@ -59,7 +59,7 @@ struct object
     void (*interact)();
 };
 
-struct playercharacter
+struct playercharacter //this represents the character; there is oly ever one instance of it
 {
     int level = 1;
     int freePoints = 0; // 12 total
@@ -138,7 +138,7 @@ struct character
     int health;
 };
 
-string getHealthBar(int health, int maxHealth)
+string getHealthBar(int health, int maxHealth) //gets a string that visually represents a healthbar
 {
     string healthBar = "[";
     for(int i = 0; i < health; i++)
@@ -153,7 +153,7 @@ string getHealthBar(int health, int maxHealth)
     return healthBar;
 }
 
-string getInput()
+string getInput() //gets a line of text that the user enters and returns that line, lowercase
 {
     string input;
     getline(cin, input);
@@ -161,7 +161,7 @@ string getInput()
     return input;
 }
 
-bool getYesNo()
+bool getYesNo() //returns true/false depending on whether the user inputs positively or negtively
 {
     string answer;
     while(true)
@@ -182,7 +182,8 @@ bool getYesNo()
     }
 }
 
-bool strEquals( const std::string& str1, const std::string& str2 ) {
+bool strEquals( const std::string& str1, const std::string& str2 ) //returns whether the two strings are equal, IGNORING CASE
+{
     std::string str1Cpy( str1 );
     std::string str2Cpy( str2 );
     std::transform( str1Cpy.begin(), str1Cpy.end(), str1Cpy.begin(), ::tolower );
@@ -191,7 +192,7 @@ bool strEquals( const std::string& str1, const std::string& str2 ) {
 }
 
 
-int getMaxHealth()
+int getMaxHealth() //calculates the players max health
 {
     return player.fortitude*3 + 1;
 }
@@ -254,7 +255,7 @@ void playerMoveWest()
     }
 }
 
-void actionMove(string dir)
+void actionMove(string dir) //moves the player in the direction specified by dir
 {
     while(true)
     {
@@ -284,7 +285,7 @@ void actionMove(string dir)
     }
 }
 
-void inspectSelf()
+void inspectSelf() //prints the details of the player
 {
     printf("-- Stats --\n");
     printf("Fortitude:%4i    Health: %02i/%02i %s\n", player.fortitude, player.health, player.maxHealth, getHealthBar(player.health, player.maxHealth).c_str());
@@ -305,7 +306,7 @@ void inspectSelf()
     }
 }
 
-void inspectRoom()
+void inspectRoom() //pritns the details of the current room
 {
     cout << "Items: ";
     for(int i = 0; i < 16; i++)
@@ -321,36 +322,37 @@ void inspectRoom()
     }
 }
 
-void actionInspect(string inspection)
+void actionInspect(string inspection) //prints the details of the thing specified by "inspection"
 {
-    if(inspection == "self")
+    if(inspection == "self") //inspect self
     {
         inspectSelf();
     }
-    else if(inspection == "room")
+    else if(inspection == "room") //inspect room
     {
         inspectRoom();
     }
-    else if(inspection.length() > 0)
+    else if(inspection.length() > 0) //assume inspect item
     {
-        int i;
-        for(i = 0; i < 16; i++)
+        bool itemFound = false;
+        for(int i = 0; i < 16; i++)
         {
             if(strEquals(player.items[i].name, inspection))
             {
                 printItem(player.items[i]);
+                itemFound = true;
             }
         }
 
-        int j;
-        for(j = 0; j < 16; j++)
+        for(int j = 0; j < 16; j++)
         {
             if(strEquals(map[player.y][player.x].items[j].name, inspection))
             {
                 printItem(map[player.y][player.x].items[j]);
+                itemFound = true;
             }
         }
-        if(i > 15 && j > 15) // TODO: i, j are always 16
+        if(!itemFound)
         {
             cout << "Cannot inspect " << inspection << endl;
         }
@@ -361,7 +363,7 @@ void actionInspect(string inspection)
     }
 }
 
-void actionPickup(string name)
+void actionPickup(string name) //picks up the given item from the room
 {
     for(int i = 0; i < 16; i++)
     {
@@ -387,7 +389,7 @@ void actionPickup(string name)
     }
 }
 
-void actionDrop(string name)
+void actionDrop(string name) //drops the given item from inventory to the room
 {
     for(int i = 0; i < 16; i++)
     {
@@ -429,7 +431,7 @@ string getAction()
     return getInput();
 }
 
-void setupMap()     //item starting locations
+void setupMap() //fills the rooms with items, objects, and enemies
 {
     item knife;
     knife.name = "Knife";
@@ -463,7 +465,7 @@ void setupMap()     //item starting locations
     map[2][3].items[0] = axe;
 }
 
-void resetStatPoints()
+void resetStatPoints() //sets the players stats to 0, and puts the points back into the unallocated pool
 {
     player.freePoints += player.strength;
     player.freePoints += player.dexterity;
@@ -476,7 +478,7 @@ void resetStatPoints()
     player.agility = 0;
 }
 
-void allocateStat(string name, int& stat, bool startup)
+void allocateStat(string name, int& stat, bool startup) //asks the player to move points from "unallocated" to the given variable
 {
     int statInput;
     int prevAmnt;
@@ -498,7 +500,7 @@ void allocateStat(string name, int& stat, bool startup)
     player.freePoints -= (stat - prevAmnt);
 }
 
-void allocateStatPoints(bool startup)
+void allocateStatPoints(bool startup) //asks the player to allocate their unallocated stat points
 {
     allocateStat("strength", player.strength, startup);
     allocateStat("dexterity", player.dexterity, startup);
@@ -506,7 +508,7 @@ void allocateStatPoints(bool startup)
     allocateStat("agility", player.agility, startup);
 }
 
-void setup()
+void setup() //the function called when starting a new game
 {
     shouldExit = false;
     player.maxHealth = getMaxHealth();
@@ -541,17 +543,17 @@ void addStatPoints(int &stat, int amount)
 
 }
 
-bool isBelowMin(int level, int stat)
+bool isBelowMin(int level, int stat) //checks if the player should have a trait
 {
     return stat <= level * 0.8 - 6;
 }
 
-bool isAboveMax(int level, int stat)
+bool isAboveMax(int level, int stat) //checks if the player should have a trait
 {
     return stat >= level * 1.25 + 3;
 }
 
-void applyTraits(character c)
+void applyTraits(character c) //sets traits to what they should be
 {
     player.trait[0] = isBelowMin(player.level, player.strength);
     player.trait[1] = isBelowMin(player.level, player.dexterity);
@@ -563,7 +565,7 @@ void applyTraits(character c)
     player.trait[7] = isAboveMax(player.level, player.agility);
 }
 
-void mainLoop()
+void mainLoop() //the function called at the beginning of the player's turn
 {
     cout << endl;
     string input = getAction();
@@ -599,7 +601,7 @@ void mainLoop()
     }
 }
 
-void endgame()
+void endgame() //the function called when exiting to main menu
 {
 
 }
