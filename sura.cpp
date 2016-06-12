@@ -1,9 +1,10 @@
-#include <iostream>
-#include <stdlib.h>
-#include <time.h>
 #include <algorithm>
 #include <cstdio>
+#include <iostream>
+#include <regex>
+#include <stdlib.h>
 #include <string>
+#include <time.h>
 
 using std::cin;
 using std::cout;
@@ -11,8 +12,11 @@ using std::endl;
 using std::getline;
 using std::max;
 using std::min;
+using std::regex;
+using std::regex_match;
 using std::size_t;
 using std::string;
+using std::stringstream;
 using std::transform;
 
 bool shouldExit;
@@ -159,6 +163,24 @@ string getInput() //gets a line of text that the user enters and returns that li
     getline(cin, input);
     transform(input.begin(), input.end(), input.begin(), ::tolower);
     return input;
+}
+
+int getInt() //gets an integer from the user
+{
+    string answer;
+    while(true)
+    {
+        answer = getInput();
+        stringstream ss(answer);
+        int i;
+
+        if(ss >> i)
+        {
+            return i;
+        }
+
+        cout << "Invalid input. Please enter an integer: ";
+    }
 }
 
 bool getYesNo() //returns true/false depending on whether the user inputs positively or negtively
@@ -480,13 +502,10 @@ void resetStatPoints() //sets the players stats to 0, and puts the points back i
 
 void allocateStat(string name, int& stat, bool startup) //asks the player to move points from "unallocated" to the given variable
 {
-    int statInput;
-    int prevAmnt;
+    cout << "You have " << player.freePoints << " points left. How many would you like in " << name << "? ";
 
-    cout << "How many points would you like in " << name << "?" << endl;
-    cin >> statInput;
-    cin.sync();
-    prevAmnt = stat;
+    int prevAmnt = stat;
+    int statInput = getInt();
 
     if(startup)
     {
@@ -506,6 +525,7 @@ void allocateStatPoints(bool startup) //asks the player to allocate their unallo
     allocateStat("dexterity", player.dexterity, startup);
     allocateStat("fortitude", player.fortitude, startup);
     allocateStat("agility", player.agility, startup);
+    cout << endl;
 }
 
 void setup() //the function called when starting a new game
@@ -516,12 +536,7 @@ void setup() //the function called when starting a new game
     setupMap();
 
     cout << "Welcome to Sura!" << endl << endl;
-    cout << "Your current stats are:" << endl;
-    cout << "Strength: " << player.strength << endl;
-    cout << "Dexterity: " << player.dexterity << endl;
-    cout << "Fortitude: " << player.fortitude << endl;
-    cout << "Agility: " << player.agility << endl;
-    cout << "Would you like to proceed?" << endl;
+    cout << "We have given you balanced starting stats." << endl << "Would you like to continue without customizing them? ";
     while (!getYesNo())
     {
         resetStatPoints();
@@ -534,7 +549,7 @@ void setup() //the function called when starting a new game
         cout << "Unallocated points: " << player.freePoints << endl;
         cout << "Allocated points: " << player.strength+player.dexterity+player.fortitude+player.agility << endl << endl;
 
-        cout << "Would you like to proceed?" << endl;
+        cout << "Would you like to proceed? ";
     }
 }
 
