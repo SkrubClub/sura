@@ -178,6 +178,18 @@ struct room
     object objects[16];
 } map[4][4];
 
+bool doorH[4][3] = {
+    {true , true , true },
+    {true , true , true },
+    {true , true , true },
+    {true , true , true }
+};
+bool doorV[3][4] = {
+    {true , true , true , true },
+    {true , true , true , true },
+    {true , true , true , true }
+};
+
 void playerMoveNorth()
 {
     if(player.y > 0)
