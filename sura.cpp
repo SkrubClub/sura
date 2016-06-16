@@ -88,6 +88,7 @@ struct playercharacter
     Hot Dish            -       "Inspect self"
     Socially Awkward    -       Speech prompts are randomly selected
     Lemony              -       Failed procs reduce your chance to suceed future procs
+    One-Liner           -       You are unable to talk to NPCs after one prompt
 
 
     */
@@ -130,6 +131,14 @@ struct character
     int maxHealth;
     int health;
 };
+
+bool strEquals( const std::string& str1, const std::string& str2 ) {
+    std::string str1Cpy( str1 );
+    std::string str2Cpy( str2 );
+    std::transform( str1Cpy.begin(), str1Cpy.end(), str1Cpy.begin(), ::tolower );
+    std::transform( str2Cpy.begin(), str2Cpy.end(), str2Cpy.begin(), ::tolower );
+    return ( str1Cpy == str2Cpy );
+}
 
 string getHealthBar(int health, int maxHealth)
 {
@@ -192,7 +201,7 @@ bool receiveOath(int oathID, string answer)
     if(strEquals(answer, "oath of the " + oathTitle[oathID]))
     {
         player.oath[oathID] = true;
-        cout << endl << "\" " << oathTitle[oathID] << " One. May you be worthy.\"" << endl << endl;
+        cout << endl << "\"" << oathTitle[oathID] << " One. May you be worthy.\"" << endl << endl;
         return true;
     }
     else
@@ -236,15 +245,6 @@ bool getYesNoOaths()
         }
     }
 }
-
-bool strEquals( const std::string& str1, const std::string& str2 ) {
-    std::string str1Cpy( str1 );
-    std::string str2Cpy( str2 );
-    std::transform( str1Cpy.begin(), str1Cpy.end(), str1Cpy.begin(), ::tolower );
-    std::transform( str2Cpy.begin(), str2Cpy.end(), str2Cpy.begin(), ::tolower );
-    return ( str1Cpy == str2Cpy );
-}
-
 
 int getMaxHealth()
 {
@@ -641,17 +641,17 @@ void mainLoop()
 
 void endgame()
 {
-    
+
 }
 
 void mainMenu()
 {
     cout << "Welcome to Sura!" << endl << endl;
     cout << "   ~Play Game~" << endl << "      ~Help~" << endl << "         ~Credits~" << endl << "            ~Quit Sura~" << endl;
-    
-    
+
+
     string input = getInput();
-    
+
     if(input == "play game")
     {
         setup();
