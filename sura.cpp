@@ -230,34 +230,82 @@ void playerMoveWest()
     }
 }
 
-void actionMove(string dir)
+string getAction()
 {
-    while(true)
+    cout << "What is your action this turn? ";
+    return getInput();
+}
+
+void resetStatPoints()
+{
+    player.freePoints += player.strength;
+    player.freePoints += player.dexterity;
+    player.freePoints += player.fortitude;
+    player.freePoints += player.agility;
+
+    player.strength = 0;
+    player.dexterity = 0;
+    player.fortitude = 0;
+    player.agility = 0;
+}
+
+void allocateStat(string name, int& stat, bool startup)
+{
+    int statInput;
+    int prevAmnt;
+
+    cout << "How many points would you like in " << name << "?" << endl;
+    cin >> statInput;
+    cin.sync();
+    prevAmnt = stat;
+
+    if(startup)
     {
-        if(dir == "north" || dir == "n")
-        {
-            playerMoveNorth();
-        }
-        else if(dir == "south" || dir == "s")
-        {
-            playerMoveSouth();
-        }
-        else if(dir == "east" || dir == "e")
-        {
-            playerMoveEast();
-        }
-        else if(dir == "west" || dir == "w")
-        {
-            playerMoveWest();
-        }
-        else
-        {
-            cout << "Invalid input.  Please enter a cardinal direction to move in (North/N, East/E, South/S, West/W)." << endl;
-            dir = getInput();
-            continue;
-        }
-        break;
+        stat = min(statInput, min(player.freePoints, 5));
     }
+    else
+    {
+        stat = min(statInput, player.freePoints);
+    }
+
+    player.freePoints -= (stat - prevAmnt);
+}
+
+void allocateStatPoints(bool startup)
+{
+    allocateStat("strength", player.strength, startup);
+    allocateStat("dexterity", player.dexterity, startup);
+    allocateStat("fortitude", player.fortitude, startup);
+    allocateStat("agility", player.agility, startup);
+}
+
+void interactGRI()
+{
+    resetStatPoints();
+    allocateStatPoints(false);
+    cout << "Enjoy your new bod!" << endl;
+}
+
+bool isBelowMin(int level, int stat)
+{
+    return stat <= level * 0.8 - 6;
+}
+
+bool isAboveMax(int level, int stat)
+{
+    return stat >= level * 1.25 + 3;
+}
+
+void applyTraits(character c)
+{
+    player.trait[0] = isBelowMin(player.level, player.strength);
+    player.trait[1] = isBelowMin(player.level, player.dexterity);
+    player.trait[2] = isBelowMin(player.level, player.fortitude);
+    player.trait[3] = isBelowMin(player.level, player.agility);
+    player.trait[4] = isAboveMax(player.level, player.strength);
+    player.trait[5] = isAboveMax(player.level, player.dexterity);
+    player.trait[6] = isAboveMax(player.level, player.fortitude);
+    player.trait[7] = isAboveMax(player.level, player.agility);
 }
 
 void inspectSelf()
@@ -294,6 +342,57 @@ void inspectRoom()
             }
             cout << map[player.y][player.x].items[i].name;
         }
+    }
+    cout << endl;
+    cout << "Objects: ";
+    for(int i = 0; i < 16; i++)
+    {
+        if(map[player.y][player.x].objects[i].name.length() > 0)
+        {
+            if(i > 0)
+            {
+                cout << ", ";
+            }
+            cout << map[player.y][player.x].objects[i].name;
+        }
+    }
+    cout << endl;
+}
+
+//      _        _   _
+//     / \   ___| |_(_) ___  _ __  ___
+//    / _ \ / __| __| |/ _ \| '_ \/ __|
+//   / ___ \ (__| |_| | (_) | | | \__ \
+//  /_/   \_\___|\__|_|\___/|_| |_|___/
+//
+
+void actionMove(string dir)
+{
+    while(true)
+    {
+        if(dir == "north" || dir == "n")
+        {
+            playerMoveNorth();
+        }
+        else if(dir == "south" || dir == "s")
+        {
+            playerMoveSouth();
+        }
+        else if(dir == "east" || dir == "e")
+        {
+            playerMoveEast();
+        }
+        else if(dir == "west" || dir == "w")
+        {
+            playerMoveWest();
+        }
+        else
+        {
+            cout << "Invalid input.  Please enter a cardinal direction to move in (North/N, East/E, South/S, West/W)." << endl;
+            dir = getInput();
+            continue;
+        }
+        break;
     }
 }
 
@@ -359,6 +458,19 @@ void actionDrop(string name)
     }
 }
 
+void actionInteract(string name)
+{
+    for(int i = 0; i < 16; i++)
+    {
+        if(strEquals(map[player.y][player.x].objects[i].name, name))
+        {
+            map[player.y][player.x].objects[i].interact();
+            return;
+        }
+    }
+    cout << "You stand alone, surroundings barren of anything helpful." << endl;
+}
+
 void actionNothing()
 {
     cout << "You did nothing" << endl;
@@ -370,10 +482,14 @@ void actionQuit()
     shouldQuitGame = getYesNo();
 }
 
-string getAction()
+void printHelp()
 {
-    cout << "What is your action this turn? ";
-    return getInput();
+    cout << "At the beginning of your turn you have any of the following actions:" << endl << endl;
+    cout << "Movement:" << endl << "\"Move North\" or \"Move N\"." << endl << "\"Move East\" or \"Move E\"." << endl << "\"Move South\" or \"Move S\"." << endl << "\"Move West\" or \"Move W\"." << endl << endl;
+    cout << "Inspection:" << endl << "\"Inspect Room\" (Inspects room for items, objects, and enemies)." << endl << "\"Inspect Self\" (Shows player inventory and stats)" << endl << endl;
+    cout << "Picking up and dropping items:" << endl << "\"PickUp (item name)\"." << endl << "\"Drop (item name)\"." << endl << endl;
+    cout << "Doing nothing (idle) for your turn:" << endl << "\"Nothing\"" << endl << endl;
+    cout << "Quitting game:" <<  endl << "\"Quit\"" << endl << endl;
 }
 
 void setupMap()     //item starting locations
@@ -408,49 +524,14 @@ void setupMap()     //item starting locations
     axe.name = "Axe";
     axe.damage = 5;
     map[2][3].items[0] = axe;
-}
 
-void resetStatPoints()
-{
-    player.freePoints += player.strength;
-    player.freePoints += player.dexterity;
-    player.freePoints += player.fortitude;
-    player.freePoints += player.agility;
+    // Objets
 
-    player.strength = 0;
-    player.dexterity = 0;
-    player.fortitude = 0;
-    player.agility = 0;
-}
-
-void allocateStat(string name, int& stat, bool startup)
-{
-    int statInput;
-    int prevAmnt;
-
-    cout << "How many points would you like in " << name << "?" << endl;
-    cin >> statInput;
-    cin.sync();
-    prevAmnt = stat;
-
-    if(startup)
-    {
-        stat = min(statInput, min(player.freePoints, 5));
-    }
-    else
-    {
-        stat = min(statInput, player.freePoints);
-    }
-
-    player.freePoints -= (stat - prevAmnt);
-}
-
-void allocateStatPoints(bool startup)
-{
-    allocateStat("strength", player.strength, startup);
-    allocateStat("dexterity", player.dexterity, startup);
-    allocateStat("fortitude", player.fortitude, startup);
-    allocateStat("agility", player.agility, startup);
+    object gri;
+    gri.name = "Genetic Reconstitution Interface";
+    gri.description = "A mysterious machine.";
+    gri.interact = &interactGRI;
+    map[3][3].objects[0] = gri;
 }
 
 void setup()
@@ -483,43 +564,6 @@ void setup()
     }
 }
 
-void addStatPoints(int &stat, int amount)
-{
-
-}
-
-bool isBelowMin(int level, int stat)
-{
-    return stat <= level * 0.8 - 6;
-}
-
-bool isAboveMax(int level, int stat)
-{
-    return stat >= level * 1.25 + 3;
-}
-
-void applyTraits(character c)
-{
-    player.trait[0] = isBelowMin(player.level, player.strength);
-    player.trait[1] = isBelowMin(player.level, player.dexterity);
-    player.trait[2] = isBelowMin(player.level, player.fortitude);
-    player.trait[3] = isBelowMin(player.level, player.agility);
-    player.trait[4] = isAboveMax(player.level, player.strength);
-    player.trait[5] = isAboveMax(player.level, player.dexterity);
-    player.trait[6] = isAboveMax(player.level, player.fortitude);
-    player.trait[7] = isAboveMax(player.level, player.agility);
-}
-
-void printHelp()
-{
-    cout << "At the beginning of your turn you have any of the following actions:" << endl << endl;
-    cout << "Movement:" << endl << "\"Move North\" or \"Move N\"." << endl << "\"Move East\" or \"Move E\"." << endl << "\"Move South\" or \"Move S\"." << endl << "\"Move West\" or \"Move W\"." << endl << endl;
-    cout << "Inspection:" << endl << "\"Inspect Room\" (Inspects room for items, objects, and enemies)." << endl << "\"Inspect Self\" (Shows player inventory and stats)" << endl << endl;
-    cout << "Picking up and dropping items:" << endl << "\"PickUp (item name)\"." << endl << "\"Drop (item name)\"." << endl << endl;
-    cout << "Doing nothing (idle) for your turn:" << endl << "\"Nothing\"" << endl << endl;
-    cout << "Quitting game:" <<  endl << "\"Quit\"" << endl << endl;
-}
-
 void mainLoop()
 {
     cout << endl;
@@ -540,6 +584,10 @@ void mainLoop()
     else if(input.substr(0, 5) == "drop ")
     {
         actionDrop(input.substr(5));
+    }
+    else if(input.substr(0, 9) == "interact ")
+    {
+        actionInteract(input.substr(9));
     }
     else if(input == "quit" || input == "q")
     {
@@ -562,17 +610,17 @@ void mainLoop()
 
 void endgame()
 {
-    
+
 }
 
 void mainMenu()
 {
     cout << "Welcome to Sura!" << endl << endl;
-    cout << "   ~Play Game~" << endl << "      ~Help~" << endl << "         ~Credits~" << endl << "            ~Quit Sura~" << endl;
-    
-    
+    cout << "-Play Game" << endl << "-Help" << endl << "-Credits" << endl << "-Quit Sura" << endl;
+
+
     string input = getInput();
-    
+
     if(input == "play game")
     {
         setup();
@@ -587,7 +635,9 @@ void mainMenu()
     }
     else if(input == "credits")
     {
-        cout << "Two guys went over to a skrub's house and decided to learn C++.  The two guys and the one skrub then decided to form SkrubClub, and to make the project, sura, to better learn C++." << endl;
+        cout << "TGwTH: Coding" << endl;
+        cout << "     : Coding" << endl;
+        cout << "TK301: Coding" << endl;
     }
     else if(input == "quit sura")
     {
