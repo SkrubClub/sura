@@ -282,34 +282,98 @@ void playerMoveWest()
     }
 }
 
-void actionMove(string dir) //moves the player in the direction specified by dir
+string getAction()
 {
-    while(true)
+    cout << "What is your action this turn? ";
+    return getInput();
+}
+
+void printStats()
+{
+    cout << "Your current stats are:" << endl;
+    cout << "Strength: " << player.strength << endl;
+    cout << "Dexterity: " << player.dexterity << endl;
+    cout << "Fortitude: " << player.fortitude << endl;
+    cout << "Agility: " << player.agility << endl;
+    cout << "Unallocated points: " << player.freePoints << endl;
+    cout << "Allocated points: " << player.strength+player.dexterity+player.fortitude+player.agility << endl;
+}
+
+void resetStatPoints()
+{
+    player.freePoints += player.strength;
+    player.freePoints += player.dexterity;
+    player.freePoints += player.fortitude;
+    player.freePoints += player.agility;
+
+    player.strength = 0;
+    player.dexterity = 0;
+    player.fortitude = 0;
+    player.agility = 0;
+}
+
+void allocateStat(string name, int& stat, bool startup)
+{
+    int statInput;
+    int prevAmnt;
+
+    cout << "How many points would you like in " << name << "?" << endl;
+    cin >> statInput;
+    cin.sync();
+    prevAmnt = stat;
+
+    if(startup)
     {
-        if(dir == "north" || dir == "n")
-        {
-            playerMoveNorth();
-        }
-        else if(dir == "south" || dir == "s")
-        {
-            playerMoveSouth();
-        }
-        else if(dir == "east" || dir == "e")
-        {
-            playerMoveEast();
-        }
-        else if(dir == "west" || dir == "w")
-        {
-            playerMoveWest();
-        }
-        else
-        {
-            cout << "Invalid input.  Please enter a cardinal direction to move in (North/N, East/E, South/S, West/W)." << endl;
-            dir = getInput();
-            continue;
-        }
-        break;
+        stat = min(statInput, min(player.freePoints, 5));
     }
+    else
+    {
+        stat = min(statInput, player.freePoints);
+    }
+
+    player.freePoints -= (stat - prevAmnt);
+}
+
+void allocateStatPoints(bool startup)
+{
+    allocateStat("strength", player.strength, startup);
+    allocateStat("dexterity", player.dexterity, startup);
+    allocateStat("fortitude", player.fortitude, startup);
+    allocateStat("agility", player.agility, startup);
+}
+
+
+
+bool isBelowMin(int level, int stat)
+{
+    return stat <= level * 0.8 - 6;
+}
+
+bool isAboveMax(int level, int stat)
+{
+    return stat >= level * 1.25 + 3;
+}
+
+void applyTraits()
+{
+    player.trait[0] = isBelowMin(player.level, player.strength);
+    player.trait[1] = isBelowMin(player.level, player.dexterity);
+    player.trait[2] = isBelowMin(player.level, player.fortitude);
+    player.trait[3] = isBelowMin(player.level, player.agility);
+    player.trait[4] = isAboveMax(player.level, player.strength);
+    player.trait[5] = isAboveMax(player.level, player.dexterity);
+    player.trait[6] = isAboveMax(player.level, player.fortitude);
+    player.trait[7] = isAboveMax(player.level, player.agility);
+}
+
+void interactGRI()
+{
+    cout << "Genetic Reconstitution Interface booting..." << endl;
+    cout << "GRI at 100% power, launching..." << endl;
+    printStats();
+    allocateStatPoints(false);
+    applyTraits();
+    cout << "Enjoy your new body!" << endl;
 }
 
 void inspectSelf() //prints the details of the player
@@ -346,6 +410,57 @@ void inspectRoom() //pritns the details of the current room
             }
             cout << map[player.y][player.x].items[i].name;
         }
+    }
+    cout << endl;
+    cout << "Objects: ";
+    for(int i = 0; i < 16; i++)
+    {
+        if(map[player.y][player.x].objects[i].name.length() > 0)
+        {
+            if(i > 0)
+            {
+                cout << ", ";
+            }
+            cout << map[player.y][player.x].objects[i].name;
+        }
+    }
+    cout << endl;
+}
+
+//      _        _   _
+//     / \   ___| |_(_) ___  _ __  ___
+//    / _ \ / __| __| |/ _ \| '_ \/ __|
+//   / ___ \ (__| |_| | (_) | | | \__ \
+//  /_/   \_\___|\__|_|\___/|_| |_|___/
+//
+
+void actionMove(string dir) //moves the player in the direction specified by dir
+{
+    while(true)
+    {
+        if(dir == "north" || dir == "n")
+        {
+            playerMoveNorth();
+        }
+        else if(dir == "south" || dir == "s")
+        {
+            playerMoveSouth();
+        }
+        else if(dir == "east" || dir == "e")
+        {
+            playerMoveEast();
+        }
+        else if(dir == "west" || dir == "w")
+        {
+            playerMoveWest();
+        }
+        else
+        {
+            cout << "Invalid input.  Please enter a cardinal direction to move in (North/N, East/E, South/S, West/W)." << endl;
+            dir = getInput();
+            continue;
+        }
+        break;
     }
 }
 
@@ -441,6 +556,19 @@ void actionDrop(string name) //drops the given item from inventory to the room
     }
 }
 
+void actionInteract(string name)
+{
+    for(int i = 0; i < 16; i++)
+    {
+        if(strEquals(map[player.y][player.x].objects[i].name, name))
+        {
+            map[player.y][player.x].objects[i].interact();
+            return;
+        }
+    }
+    cout << "You stand alone, surroundings barren of anything helpful." << endl;
+}
+
 void actionNothing()
 {
     cout << "You did nothing" << endl;
@@ -452,10 +580,14 @@ void actionQuit()
     shouldQuitGame = getYesNo();
 }
 
-string getAction()
+void printHelp()
 {
-    cout << "What is your action this turn? ";
-    return getInput();
+    cout << "At the beginning of your turn you have any of the following actions:" << endl << endl;
+    cout << "Movement:" << endl << "\"Move North\" or \"Move N\"." << endl << "\"Move East\" or \"Move E\"." << endl << "\"Move South\" or \"Move S\"." << endl << "\"Move West\" or \"Move W\"." << endl << endl;
+    cout << "Inspection:" << endl << "\"Inspect Room\" (Inspects room for items, objects, and enemies)." << endl << "\"Inspect Self\" (Shows player inventory and stats)" << endl << endl;
+    cout << "Picking up and dropping items:" << endl << "\"PickUp (item name)\"." << endl << "\"Drop (item name)\"." << endl << endl;
+    cout << "Doing nothing (idle) for your turn:" << endl << "\"Nothing\"" << endl << endl;
+    cout << "Quitting game:" <<  endl << "\"Quit\"" << endl << endl;
 }
 
 void setupMap() //fills the rooms with items, objects, and enemies
@@ -490,47 +622,14 @@ void setupMap() //fills the rooms with items, objects, and enemies
     axe.name = "Axe";
     axe.damage = 5;
     map[2][3].items[0] = axe;
-}
 
-void resetStatPoints() //sets the players stats to 0, and puts the points back into the unallocated pool
-{
-    player.freePoints += player.strength;
-    player.freePoints += player.dexterity;
-    player.freePoints += player.fortitude;
-    player.freePoints += player.agility;
+    //objects
 
-    player.strength = 0;
-    player.dexterity = 0;
-    player.fortitude = 0;
-    player.agility = 0;
-}
-
-void allocateStat(string name, int& stat, bool startup) //asks the player to move points from "unallocated" to the given variable
-{
-    cout << "You have " << player.freePoints << " points left. How many would you like in " << name << "? ";
-
-    int prevAmnt = stat;
-    int statInput = getInt();
-
-    if(startup)
-    {
-        stat = min(statInput, min(player.freePoints, 5));
-    }
-    else
-    {
-        stat = min(statInput, player.freePoints);
-    }
-
-    player.freePoints -= (stat - prevAmnt);
-}
-
-void allocateStatPoints(bool startup) //asks the player to allocate their unallocated stat points
-{
-    allocateStat("strength", player.strength, startup);
-    allocateStat("dexterity", player.dexterity, startup);
-    allocateStat("fortitude", player.fortitude, startup);
-    allocateStat("agility", player.agility, startup);
-    cout << endl;
+    object gri;
+    gri.name = "Genetic Reconstitution Interface";
+    gri.description = "A mysterious machine.";
+    gri.interact = &interactGRI;
+    map[3][3].objects[0] = gri;
 }
 
 void setup() //the function called when starting a new game
@@ -546,61 +645,14 @@ void setup() //the function called when starting a new game
     {
         resetStatPoints();
         allocateStatPoints(true);
-        cout << "Your current stats are:" << endl;
-        cout << "Strength: " << player.strength << endl;
-        cout << "Dexterity: " << player.dexterity << endl;
-        cout << "Fortitude: " << player.fortitude << endl;
-        cout << "Agility: " << player.agility << endl;
-        cout << "Unallocated points: " << player.freePoints << endl;
-        cout << "Allocated points: " << player.strength+player.dexterity+player.fortitude+player.agility << endl << endl;
+        printStats();
+        cout << endl;
 
         cout << "Would you like to proceed? ";
     }
 }
 
-void addStatPoints(int &stat, int amount)
-{
-
-}
-
-bool isBelowMin(int level, int stat) //checks if the player should have a trait
-{
-    return stat <= level * 0.8 - 6;
-}
-
-bool isAboveMax(int level, int stat) //checks if the player should have a trait
-{
-    return stat >= level * 1.25 + 3;
-}
-
-void applyTraits(character c) //sets traits to what they should be
-{
-    player.trait[0] = isBelowMin(player.level, player.strength);
-    player.trait[1] = isBelowMin(player.level, player.dexterity);
-    player.trait[2] = isBelowMin(player.level, player.fortitude);
-    player.trait[3] = isBelowMin(player.level, player.agility);
-    player.trait[4] = isAboveMax(player.level, player.strength);
-    player.trait[5] = isAboveMax(player.level, player.dexterity);
-    player.trait[6] = isAboveMax(player.level, player.fortitude);
-    player.trait[7] = isAboveMax(player.level, player.agility);
-}
-
-void printHelp()
-{
-    cout << "At the beginning of your turn you have any of the following actions:" << endl << endl;
-    cout << "Movement:" << endl << "\"Move North\" or \"Move N\"." << endl << "\"Move East\" or \"Move E\"." << endl << "\"Move South\" or \"Move S\"." << endl << "\"Move West\" or \"Move W\"." << endl << endl;
-    cout << "Inspection:" << endl << "\"Inspect Room\" (Inspects room for items, objects, and enemies)." << endl << "\"Inspect Self\" (Shows player inventory and stats)" << endl << endl;
-    cout << "Picking up and dropping items:" << endl << "\"PickUp (item name)\"." << endl << "\"Drop (item name)\"." << endl << endl;
-    cout << "Doing nothing (idle) for your turn:" << endl << "\"Nothing\"" << endl << endl;
-    cout << "Quitting game:" <<  endl << "\"Quit\"" << endl << endl;
-    cout << "In Sura, case never matters. \"move south\" is the same as \"mOvE SoUtH\"." << endl << endl;
-    cout << "Whenever the game asks a yes/no question, you can answer with anything that starts with a 'y' or an 'n'. For example, these are all valid inputs: "
-         << "y, n, yes, no, yeah, nah, yea, nay." << endl;
-
-    wait();
-}
-
-void mainLoop() //the function called at the beginning of the player's turn
+void mainLoop()
 {
     cout << endl;
     string input = getAction();
@@ -620,6 +672,10 @@ void mainLoop() //the function called at the beginning of the player's turn
     else if(input.substr(0, 5) == "drop ")
     {
         actionDrop(input.substr(5));
+    }
+    else if(input.substr(0, 9) == "interact ")
+    {
+        actionInteract(input.substr(9));
     }
     else if(input == "quit" || input == "q")
     {
@@ -642,8 +698,9 @@ void mainLoop() //the function called at the beginning of the player's turn
 
 void endgame() //the function called when exiting to main menu
 {
-    
+
 }
+
 
 void mainMenu() //the function called when going to main menu
 {
@@ -683,8 +740,9 @@ void mainMenu() //the function called when going to main menu
     }
     else if(input == "credits" || input == "c")
     {
-        cout << "Two guys went over to a skrub's house and decided to learn C++.  The two guys and the one skrub then decided to form SkrubClub, and to make the project, sura, to better learn C++." << endl;
-        wait();
+        cout << "TGwTH: Coding" << endl;
+        cout << "     : Coding" << endl;
+        cout << "TK301: Coding" << endl;
     }
     else if(input == "quit sura" || input == "q")
     {
