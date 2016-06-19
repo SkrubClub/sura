@@ -134,12 +134,14 @@ struct playercharacter //this represents the character; there is oly ever one in
     item items[16];
 } player;
 
-struct character
+struct enemy
 {
+    string name;
     int damage;
     int maxHealth;
     int health;
-};
+    bool first = false;
+} emptyEnemy;
 
 string getHealthBar(int health, int maxHealth) //gets a string that visually represents a healthbar
 {
@@ -211,23 +213,24 @@ void wait()
 
 bool strEquals(const std::string& str1, const std::string& str2) //returns whether the two strings are equal, IGNORING CASE
 {
-    std::string str1Cpy(str1);
-    std::string str2Cpy(str2);
-    std::transform(str1Cpy.begin(), str1Cpy.end(), str1Cpy.begin(), ::tolower);
-    std::transform(str2Cpy.begin(), str2Cpy.end(), str2Cpy.begin(), ::tolower);
+    string str1Cpy(str1);
+    string str2Cpy(str2);
+    transform(str1Cpy.begin(), str1Cpy.end(), str1Cpy.begin(), ::tolower);
+    transform(str2Cpy.begin(), str2Cpy.end(), str2Cpy.begin(), ::tolower);
     return (str1Cpy == str2Cpy);
 }
 
 
 int getMaxHealth() //calculates the players max health
 {
-    return player.fortitude*3 + 1;
+    return player.fortitude * 3 + 1;
 }
 
 struct room
 {
     item items[16];
     object objects[16];
+    enemy enemies[16];
 } map[4][4];
 
 void playerMoveNorth()
@@ -318,8 +321,7 @@ void allocateStat(string name, int& stat, bool startup)
     int prevAmnt;
 
     cout << "How many points would you like in " << name << "?" << endl;
-    cin >> statInput;
-    cin.sync();
+    statInput = getInt();
     prevAmnt = stat;
 
     if(startup)
@@ -341,8 +343,6 @@ void allocateStatPoints(bool startup)
     allocateStat("fortitude", player.fortitude, startup);
     allocateStat("agility", player.agility, startup);
 }
-
-
 
 bool isBelowMin(int level, int stat)
 {
@@ -411,8 +411,8 @@ void inspectRoom() //pritns the details of the current room
             cout << map[player.y][player.x].items[i].name;
         }
     }
-    cout << endl;
-    cout << "Objects: ";
+
+    cout << endl << "Objects: ";
     for(int i = 0; i < 16; i++)
     {
         if(map[player.y][player.x].objects[i].name.length() > 0)
@@ -422,6 +422,19 @@ void inspectRoom() //pritns the details of the current room
                 cout << ", ";
             }
             cout << map[player.y][player.x].objects[i].name;
+        }
+    }
+
+    cout << endl << "Enemies: ";
+    for(int i = 0; i < 16; i++)
+    {
+        if(map[player.y][player.x].enemies[i].name.length() > 0)
+        {
+            if(i > 0)
+            {
+                cout << ", ";
+            }
+            cout << map[player.y][player.x].enemies[i].name;
         }
     }
     cout << endl;
@@ -476,25 +489,44 @@ void actionInspect(string inspection) //prints the details of the thing specifie
     }
     else if(inspection.length() > 0) //assume inspect item
     {
-        bool itemFound = false;
-        for(int i = 0; i < 16; i++)
+        bool thingFound = false;
+        for(int i = 0; i < 16; i++) //items in inventory
         {
             if(strEquals(player.items[i].name, inspection))
             {
                 printItem(player.items[i]);
-                itemFound = true;
+                thingFound = true;
             }
         }
 
-        for(int j = 0; j < 16; j++)
+        for(int j = 0; j < 16; j++) //items in room
         {
             if(strEquals(map[player.y][player.x].items[j].name, inspection))
             {
                 printItem(map[player.y][player.x].items[j]);
-                itemFound = true;
+                thingFound = true;
             }
         }
-        if(!itemFound)
+
+        for(int j = 0; j < 16; j++) //objects in room
+        {
+            if(strEquals(map[player.y][player.x].objects[j].name, inspection))
+            {
+                //TODO: add printObject(map[player.y][player.x].objects[j]);
+                thingFound = true;
+            }
+        }
+
+        for(int j = 0; j < 16; j++) //enemies in room
+        {
+            if(strEquals(map[player.y][player.x].enemies[j].name, inspection))
+            {
+                //TODO: add printEnemy(map[player.y][player.x].enemies[j]);
+                thingFound = true;
+            }
+        }
+
+        if(!thingFound)
         {
             cout << "Cannot inspect " << inspection << endl;
         }
@@ -519,16 +551,14 @@ void actionPickup(string name) //picks up the given item from the room
                     printItem(map[player.y][player.x].items[i]);
                     player.items[j] = map[player.y][player.x].items[i];
                     map[player.y][player.x].items[i] = emptyItem;
-                    break;
-                }
-                if(j == 15)
-                {
-                    cout << "Your inventory is full" << endl;
+                    return;
                 }
             }
-            break;
+            cout << "Your inventory is full." << endl;
+            return;
         }
     }
+    cout << "No item \"" << name << "\" found in this room." << endl;
 }
 
 void actionDrop(string name) //drops the given item from inventory to the room
@@ -544,19 +574,17 @@ void actionDrop(string name) //drops the given item from inventory to the room
                     cout << "Dropped " << name << endl;
                     map[player.y][player.x].items[j] = player.items[i];
                     player.items[i] = emptyItem;
-                    break;
-                }
-                if(j == 15)
-                {
-                    cout << "The room is full, you can not drop your item." << endl;
+                    return;
                 }
             }
-            break;
+            cout << "The room is full, you can not drop your item." << endl;
+            return;
         }
     }
+    cout << "No item \"" << name << "\" found in your inventory." << endl;
 }
 
-void actionInteract(string name)
+void actionInteract(string name) //interacts with the oject of the given name
 {
     for(int i = 0; i < 16; i++)
     {
@@ -571,7 +599,7 @@ void actionInteract(string name)
 
 void actionNothing()
 {
-    cout << "You did nothing" << endl;
+    cout << "You did nothing." << endl;
 }
 
 void actionQuit()
@@ -580,7 +608,7 @@ void actionQuit()
     shouldQuitGame = getYesNo();
 }
 
-void printHelp()
+void printHelp() //prints help menu
 {
     cout << "At the beginning of your turn you have any of the following actions:" << endl << endl;
     cout << "Movement:" << endl << "\"Move North\" or \"Move N\"." << endl << "\"Move East\" or \"Move E\"." << endl << "\"Move South\" or \"Move S\"." << endl << "\"Move West\" or \"Move W\"." << endl << endl;
@@ -588,10 +616,13 @@ void printHelp()
     cout << "Picking up and dropping items:" << endl << "\"PickUp (item name)\"." << endl << "\"Drop (item name)\"." << endl << endl;
     cout << "Doing nothing (idle) for your turn:" << endl << "\"Nothing\"" << endl << endl;
     cout << "Quitting game:" <<  endl << "\"Quit\"" << endl << endl;
+    wait();
 }
 
 void setupMap() //fills the rooms with items, objects, and enemies
 {
+    //items
+
     item knife;
     knife.name = "Knife";
     knife.damage = 1;
@@ -630,6 +661,15 @@ void setupMap() //fills the rooms with items, objects, and enemies
     gri.description = "A mysterious machine.";
     gri.interact = &interactGRI;
     map[3][3].objects[0] = gri;
+
+    //enemies
+
+    enemy worm;
+    worm.name = "Worm";
+    worm.damage = 0;
+    worm.maxHealth = 5;
+    worm.health = worm.maxHealth;
+    map[0][1].enemies[0] = worm;
 }
 
 void setup() //the function called when starting a new game
@@ -637,6 +677,7 @@ void setup() //the function called when starting a new game
     shouldQuitGame = false;
     player.maxHealth = getMaxHealth();
     player.health = player.maxHealth;
+    player.damage = player.strength / 2;
     setupMap();
 
     cout << "Welcome to Sura!" << endl << endl;
@@ -652,7 +693,71 @@ void setup() //the function called when starting a new game
     }
 }
 
-void mainLoop()
+void fight(enemy &e) //fights the given enemy
+{
+    cout << "Entering fight with " << e.name << endl;
+    while(true)
+    {
+        cout << "Do you want to attack or flee? ";
+        string input = getInput();
+        if(strEquals(input, "attack") || strEquals(input, "a"))
+        {
+            e.health -= player.damage;
+            if(e.health <= 0)
+            {
+                cout << e.name << " has died" << endl;
+                e.health = 0;
+                e = emptyEnemy;
+                return;
+            }
+            else
+            {
+                cout << "You hit for " << player.damage << " damage. " << e.name << " is at " << e.health << "/" << e.maxHealth << " health." << endl;
+            }
+        }
+        else if(strEquals(input, "flee") || strEquals(input, "f"))
+        {
+            cout << "You fled the battle" << endl;
+            return;
+        }
+        else
+        {
+            cout << "\"Ha! You can't even type correctly!\"" << endl;
+        }
+
+        player.health -= e.damage;
+        cout << e.name << " hit you for " << e.damage << " damage. You are at " << player.health << "/" << player.maxHealth << " health." << endl;
+        if(player.health <= 0)
+        {
+            cout << "\"I warned you, but you wouldn't listen. Maybe next time...\"" << endl;
+            player.health = 0;
+        }
+    }
+}
+
+void actionFight(string e) //fights the enemy with the given name
+{
+    for(int i = 0; i < 16; i++)
+    {
+        if(strEquals(map[player.y][player.x].enemies[i].name, e))
+        {
+            cout << "\"Are you sure you want to battle me?\" ";
+            if(getYesNo())
+            {
+                cout << "\"Don't say I didn't warn you!\"" << endl;
+                fight(map[player.y][player.x].enemies[i]);
+            }
+            else
+            {
+                cout << "\"What a coward!\"" << endl;
+            }
+            return;
+        }
+    }
+    cout << "No enemy with that name found" << endl;
+}
+
+void mainLoop() //called to start the player's turn
 {
     cout << endl;
     string input = getAction();
@@ -660,6 +765,10 @@ void mainLoop()
     if(input.substr(0, 8) == "inspect ")
     {
         actionInspect(input.substr(8));
+    }
+    else if(input.substr(0, 6) == "fight ")
+    {
+        actionFight(input.substr(6));
     }
     else if(input.substr(0, 5) == "move ")
     {
@@ -743,6 +852,7 @@ void mainMenu() //the function called when going to main menu
         cout << "TGwTH: Coding" << endl;
         cout << "     : Coding" << endl;
         cout << "TK301: Coding" << endl;
+        wait();
     }
     else if(input == "quit sura" || input == "q")
     {
