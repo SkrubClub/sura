@@ -113,7 +113,7 @@ struct enemy
     int maxHealth;
     int health;
     bool first = false;
-};
+} emptyEnemy;
 
 string getHealthBar(int health, int maxHealth)
 {
@@ -482,6 +482,7 @@ void setup()
     shouldExit = false;
     player.maxHealth = getMaxHealth();
     player.health = player.maxHealth;
+    player.damage = player.strength / 2;
     setupMap();
 
     cout << "Welcome to Sura!" << endl << endl;
@@ -534,9 +535,46 @@ void applyTraits()
     player.trait[7] = isAboveMax(player.level, player.agility);
 }
 
-void fight(enemy e)
+void fight(enemy &e)
 {
     cout << "Entering fight with " << e.name << endl;
+    while(true)
+    {
+        cout << "Do you want to attack or flee? ";
+        string input = getInput();
+        if(strEquals(input, "attack") || strEquals(input, "a"))
+        {
+            e.health -= player.damage;
+            if(e.health <= 0)
+            {
+                cout << e.name << " has died" << endl;
+                e.health = 0;
+                e = emptyEnemy;
+                return;
+            }
+            else
+            {
+                cout << "You hit for " << player.damage << " damage. " << e.name << " is at " << e.health << "/" << e.maxHealth << " health." << endl;
+            }
+        }
+        else if(strEquals(input, "flee") || strEquals(input, "f"))
+        {
+            cout << "You fled the battle" << endl;
+            return;
+        }
+        else
+        {
+            cout << "\"Ha! You can't even type correctly!\"" << endl;
+        }
+
+        player.health -= e.damage;
+        cout << e.name << " hit you for " << e.damage << " damage. You are at " << player.health << "/" << player.maxHealth << " health." << endl;
+        if(player.health <= 0)
+        {
+            cout << "\"I warned you, but you wouldn't listen. Maybe next time...\"" << endl;
+            player.health = 0;
+        }
+    }
 }
 
 void actionFight(string e)
@@ -545,15 +583,15 @@ void actionFight(string e)
     {
         if(strEquals(map[player.y][player.x].enemies[i].name, e))
         {
-            cout << "u wanna go m8? fite me. 1v1 noscopes only ";
+            cout << "\"Are you sure you want to battle me?\" ";
             if(getYesNo())
             {
-                cout << "ok m8E letz go" << endl;
+                cout << "\"Don't say I didn't warn you!\"" << endl;
                 fight(map[player.y][player.x].enemies[i]);
             }
             else
             {
-                cout << "wow Wut A. Skrub. thats ur name now. cy(k)a mr. skrub" << endl;
+                cout << "\"What a coward!\"" << endl;
             }
             return;
         }
