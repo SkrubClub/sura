@@ -1,9 +1,10 @@
-#include <iostream>
-#include <stdlib.h>
-#include <time.h>
 #include <algorithm>
 #include <cstdio>
+#include <iostream>
+#include <sstream>
+#include <stdlib.h>
 #include <string>
+#include <time.h>
 
 using std::cin;
 using std::cout;
@@ -13,6 +14,7 @@ using std::max;
 using std::min;
 using std::size_t;
 using std::string;
+using std::stringstream;
 using std::transform;
 
 bool shouldQuitGame;
@@ -21,12 +23,37 @@ bool shouldQuitSura;
 struct item
 {
     string name;
-    int strength;
-    int agility;
-    int fortitude;
-    int health;
-    int damage;
+    int strength = 0;
+    int agility = 0;
+    int fortitude = 0;
+    int health = 0;
+    int damage = 0;
 } emptyItem;
+
+void printItem(item it) //prints out the details of the given item
+{
+    cout << it.name << endl;
+    if(it.strength > 0)
+    {
+        cout << "Strength: +" << it.strength;
+    }
+    if(it.agility > 0)
+    {
+        cout << "Agility: +" << it.agility;
+    }
+    if(it.fortitude > 0)
+    {
+        cout << "Fortitude: +" << it.fortitude;
+    }
+    if(it.health > 0)
+    {
+        cout << "Health: +" << it.health;
+    }
+    if(it.damage > 0)
+    {
+        cout << "Damage: +" << it.damage;
+    }
+}
 
 struct object
 {
@@ -35,7 +62,7 @@ struct object
     void (*interact)();
 };
 
-struct playercharacter
+struct playercharacter //this represents the character; there is oly ever one instance of it
 {
     int level = 1;
     int freePoints = 0; // 12 total
@@ -46,8 +73,7 @@ struct playercharacter
     int agility = 4;
     int intellect = 2;
     int wisdom = 2;
-    float luck = 0;   // Random number from 0-1;
-        //int karma = 0;
+    int karma = 0;
 
     /* Traits
 
@@ -125,22 +151,16 @@ struct playercharacter
     item items[16];
 } player;
 
-struct character
+struct enemy
 {
+    string name;
     int damage;
     int maxHealth;
     int health;
-};
+    bool first = false;
+} emptyEnemy;
 
-bool strEquals( const std::string& str1, const std::string& str2 ) {
-    std::string str1Cpy( str1 );
-    std::string str2Cpy( str2 );
-    std::transform( str1Cpy.begin(), str1Cpy.end(), str1Cpy.begin(), ::tolower );
-    std::transform( str2Cpy.begin(), str2Cpy.end(), str2Cpy.begin(), ::tolower );
-    return ( str1Cpy == str2Cpy );
-}
-
-string getHealthBar(int health, int maxHealth)
+string getHealthBar(int health, int maxHealth) //gets a string that visually represents a healthbar
 {
     string healthBar = "[";
     for(int i = 0; i < health; i++)
@@ -155,12 +175,30 @@ string getHealthBar(int health, int maxHealth)
     return healthBar;
 }
 
-string getInput()
+string getInput() //gets a line of text that the user enters and returns that line, lowercase
 {
     string input;
     getline(cin, input);
     transform(input.begin(), input.end(), input.begin(), ::tolower);
     return input;
+}
+
+int getInt() //gets an integer from the user
+{
+    string answer;
+    while(true)
+    {
+        answer = getInput();
+        stringstream ss(answer);
+        int i;
+
+        if(ss >> i)
+        {
+            return i;
+        }
+
+        cout << "Invalid input. Please enter an integer: ";
+    }
 }
 
 bool getYesNo()
@@ -184,77 +222,31 @@ bool getYesNo()
     }
 }
 
-bool receiveOath(int oathID, string answer)
+void wait()
 {
-    string oathTitle[10];
-    oathTitle[0] = "Gentle";
-    oathTitle[1] = "Aimless";
-    oathTitle[2] = "Frail";
-    oathTitle[3] = "Still";
-    oathTitle[4] = "Mindless";
-    oathTitle[5] = "Naive";
-    oathTitle[6] = "Cursed";
-    oathTitle[7] = "Blessed";
-    oathTitle[8] = "Peaceful";
-    oathTitle[9] = "Lonely";
-
-    if(strEquals(answer, "oath of the " + oathTitle[oathID]))
-    {
-        player.oath[oathID] = true;
-        cout << endl << "\"" << oathTitle[oathID] << " One. May you be worthy.\"" << endl << endl;
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+    string s;
+    getline(cin, s);
 }
 
-bool getYesNoOaths()
+bool strEquals(const std::string& str1, const std::string& str2) //returns whether the two strings are equal, IGNORING CASE
 {
-    string answer;
-    bool oathCheck = true;
-    bool shouldContinue = true;
-    while(shouldContinue)
-    {
-        answer = getInput();
-        if(answer.at(0) == 'y')
-        {
-            return true;
-        }
-        else if(answer.at(0) == 'n')
-        {
-            return false;
-        }
-        else if(answer == "take oath")
-        {
-            cout << endl << "\"Break not that which binds thee.\"" << endl << endl;
-            answer = getInput();
-
-            for(int i = 0; i < 10; i++)
-            {
-                if(receiveOath(i, answer))
-                {
-                    break;
-                }
-            }
-        }
-        else
-        {
-            cout << "Invalid input \"" << answer << "\". Please answer yes/no/y/n: " << endl;
-        }
-    }
+    string str1Cpy(str1);
+    string str2Cpy(str2);
+    transform(str1Cpy.begin(), str1Cpy.end(), str1Cpy.begin(), ::tolower);
+    transform(str2Cpy.begin(), str2Cpy.end(), str2Cpy.begin(), ::tolower);
+    return (str1Cpy == str2Cpy);
 }
 
-int getMaxHealth()
+int getMaxHealth() //calculates the players max health
 {
-    return player.fortitude*3 + 1;
+    return player.fortitude * 3 + 1;
 }
 
 struct room
 {
     item items[16];
     object objects[16];
+    enemy enemies[16];
 } map[4][4];
 
 void playerMoveNorth()
@@ -309,7 +301,230 @@ void playerMoveWest()
     }
 }
 
-void actionMove(string dir)
+string getAction()
+{
+    cout << "What is your action this turn? ";
+    return getInput();
+}
+
+void printStats()
+{
+    cout << "Your current stats are:" << endl;
+    cout << "Strength: " << player.strength << endl;
+    cout << "Dexterity: " << player.dexterity << endl;
+    cout << "Fortitude: " << player.fortitude << endl;
+    cout << "Agility: " << player.agility << endl;
+    cout << "Unallocated points: " << player.freePoints << endl;
+    cout << "Allocated points: " << player.strength+player.dexterity+player.fortitude+player.agility << endl;
+}
+
+void resetStatPoints()
+{
+    player.freePoints += player.strength;
+    player.freePoints += player.dexterity;
+    player.freePoints += player.fortitude;
+    player.freePoints += player.agility;
+
+    player.strength = 0;
+    player.dexterity = 0;
+    player.fortitude = 0;
+    player.agility = 0;
+}
+
+void allocateStat(string name, int& stat, bool startup)
+{
+    int statInput;
+    int prevAmnt;
+
+    cout << "How many points would you like in " << name << "?" << endl;
+    statInput = getInt();
+    prevAmnt = stat;
+
+    if(startup)
+    {
+        stat = min(statInput, min(player.freePoints, 5));
+    }
+    else
+    {
+        stat = min(statInput, player.freePoints);
+    }
+
+    player.freePoints -= (stat - prevAmnt);
+}
+
+void allocateStatPoints(bool startup)
+{
+    allocateStat("strength", player.strength, startup);
+    allocateStat("dexterity", player.dexterity, startup);
+    allocateStat("fortitude", player.fortitude, startup);
+    allocateStat("agility", player.agility, startup);
+}
+
+bool isBelowMin(int level, int stat)
+{
+    return stat <= level * 0.8 - 6;
+}
+
+bool isAboveMax(int level, int stat)
+{
+    return stat >= level * 1.25 + 3;
+}
+
+void applyTraits()
+{
+    player.trait[0] = isBelowMin(player.level, player.strength);
+    player.trait[1] = isBelowMin(player.level, player.dexterity);
+    player.trait[2] = isBelowMin(player.level, player.fortitude);
+    player.trait[3] = isBelowMin(player.level, player.agility);
+    player.trait[4] = isAboveMax(player.level, player.strength);
+    player.trait[5] = isAboveMax(player.level, player.dexterity);
+    player.trait[6] = isAboveMax(player.level, player.fortitude);
+    player.trait[7] = isAboveMax(player.level, player.agility);
+}
+
+bool receiveOath(int oathID, string answer)
+{
+    string oathTitle[10];
+    oathTitle[0] = "Gentle";
+    oathTitle[1] = "Aimless";
+    oathTitle[2] = "Frail";
+    oathTitle[3] = "Still";
+    oathTitle[4] = "Mindless";
+    oathTitle[5] = "Naive";
+    oathTitle[6] = "Cursed";
+    oathTitle[7] = "Blessed";
+    oathTitle[8] = "Peaceful";
+    oathTitle[9] = "Lonely";
+
+    if(strEquals(answer, "oath of the " + oathTitle[oathID]))
+    {
+        player.oath[oathID] = true;
+        cout << endl << "\"" << oathTitle[oathID] << " One. May you be worthy.\"" << endl << endl;
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool getYesNoOaths()
+{
+    string answer;
+    while(true)
+    {
+        answer = getInput();
+        if(answer.at(0) == 'y')
+        {
+            return true;
+        }
+        else if(answer.at(0) == 'n')
+        {
+            return false;
+        }
+        else if(answer == "take oath")
+        {
+            cout << endl << "\"Break not that which binds thee.\"" << endl << endl;
+            answer = getInput();
+
+            for(int i = 0; i < 10; i++)
+            {
+                if(receiveOath(i, answer))
+                {
+                    break;
+                }
+            }
+            cout << "Do you want to continue? ";
+        }
+        else
+        {
+            cout << "Invalid input \"" << answer << "\". Please answer yes/no/y/n: " << endl;
+        }
+    }
+}
+
+void interactGRI()
+{
+    cout << "Genetic Reconstitution Interface booting..." << endl;
+    cout << "GRI at 100% power, launching..." << endl;
+    printStats();
+    allocateStatPoints(false);
+    applyTraits();
+    cout << "Enjoy your new body!" << endl;
+}
+
+void inspectSelf() //prints the details of the player
+{
+    printf("-- Stats --\n");
+    printf("Fortitude:%4i    Health: %02i/%02i %s\n", player.fortitude, player.health, player.maxHealth, getHealthBar(player.health, player.maxHealth).c_str());
+    printf("Strength:%5i    Damage:%6i\n", player.strength, player.damage);
+    printf("Agility:%6i\n", player.agility);
+
+    cout << "Items: ";
+    for(int i = 0; i < 16; i++)
+    {
+        if(player.items[i].name.length() > 0)
+        {
+            if(i > 0)
+            {
+                cout << ", ";
+            }
+            cout << player.items[i].name;
+        }
+    }
+}
+
+void inspectRoom() //pritns the details of the current room
+{
+    cout << "Items: ";
+    for(int i = 0; i < 16; i++)
+    {
+        if(map[player.y][player.x].items[i].name.length() > 0)
+        {
+            if(i > 0)
+            {
+                cout << ", ";
+            }
+            cout << map[player.y][player.x].items[i].name;
+        }
+    }
+
+    cout << endl << "Objects: ";
+    for(int i = 0; i < 16; i++)
+    {
+        if(map[player.y][player.x].objects[i].name.length() > 0)
+        {
+            if(i > 0)
+            {
+                cout << ", ";
+            }
+            cout << map[player.y][player.x].objects[i].name;
+        }
+    }
+
+    cout << endl << "Enemies: ";
+    for(int i = 0; i < 16; i++)
+    {
+        if(map[player.y][player.x].enemies[i].name.length() > 0)
+        {
+            if(i > 0)
+            {
+                cout << ", ";
+            }
+            cout << map[player.y][player.x].enemies[i].name;
+        }
+    }
+    cout << endl;
+}
+
+//      _        _   _
+//     / \   ___| |_(_) ___  _ __  ___
+//    / _ \ / __| __| |/ _ \| '_ \/ __|
+//   / ___ \ (__| |_| | (_) | | | \__ \
+//  /_/   \_\___|\__|_|\___/|_| |_|___/
+//
+
+void actionMove(string dir) //moves the player in the direction specified by dir
 {
     while(true)
     {
@@ -339,56 +554,67 @@ void actionMove(string dir)
     }
 }
 
-void inspectSelf()
+void actionInspect(string inspection) //prints the details of the thing specified by "inspection"
 {
-    printf("-- Stats --\n");
-    printf("Fortitude:%4i    Health: %02i/%02i %s\n", player.fortitude, player.health, player.maxHealth, getHealthBar(player.health, player.maxHealth).c_str());
-    printf("Strength:%5i    Damage:%6i\n", player.strength, player.damage);
-    printf("Agility:%6i\n", player.agility);
-
-    cout << "Items: ";
-    for(int i = 0; i < 16; i++)
-    {
-        if(player.items[i].name.length() > 0)
-        {
-            if(i > 0)
-            {
-                cout << ", ";
-            }
-            cout << player.items[i].name;
-        }
-    }
-}
-
-void inspectRoom()
-{
-    cout << "Items: ";
-    for(int i = 0; i < 16; i++)
-    {
-        if(map[player.y][player.x].items[i].name.length() > 0)
-        {
-            if(i > 0)
-            {
-                cout << ", ";
-            }
-            cout << map[player.y][player.x].items[i].name;
-        }
-    }
-}
-
-void actionInspect(string inspection)
-{
-    if(inspection == "self")
+    if(inspection == "self") //inspect self
     {
         inspectSelf();
     }
-    else if(inspection == "room")
+    else if(inspection == "room") //inspect room
     {
         inspectRoom();
     }
+    else if(inspection.length() > 0) //assume inspect item
+    {
+        bool thingFound = false;
+        for(int i = 0; i < 16; i++) //items in inventory
+        {
+            if(strEquals(player.items[i].name, inspection))
+            {
+                printItem(player.items[i]);
+                thingFound = true;
+            }
+        }
+
+        for(int j = 0; j < 16; j++) //items in room
+        {
+            if(strEquals(map[player.y][player.x].items[j].name, inspection))
+            {
+                printItem(map[player.y][player.x].items[j]);
+                thingFound = true;
+            }
+        }
+
+        for(int j = 0; j < 16; j++) //objects in room
+        {
+            if(strEquals(map[player.y][player.x].objects[j].name, inspection))
+            {
+                //TODO: add printObject(map[player.y][player.x].objects[j]);
+                thingFound = true;
+            }
+        }
+
+        for(int j = 0; j < 16; j++) //enemies in room
+        {
+            if(strEquals(map[player.y][player.x].enemies[j].name, inspection))
+            {
+                //TODO: add printEnemy(map[player.y][player.x].enemies[j]);
+                thingFound = true;
+            }
+        }
+
+        if(!thingFound)
+        {
+            cout << "Cannot inspect " << inspection << endl;
+        }
+    }
+    else
+    {
+        cout << "Cannot inspect " << inspection << endl;
+    }
 }
 
-void actionPickup(string name)
+void actionPickup(string name) //picks up the given item from the room
 {
     for(int i = 0; i < 16; i++)
     {
@@ -398,22 +624,21 @@ void actionPickup(string name)
             {
                 if(player.items[j].name.length() == 0)
                 {
-                    cout << "Picked up " << name << endl;
+                    cout << "Picked up:" << endl;
+                    printItem(map[player.y][player.x].items[i]);
                     player.items[j] = map[player.y][player.x].items[i];
                     map[player.y][player.x].items[i] = emptyItem;
-                    break;
-                }
-                if(j == 15)
-                {
-                    cout << "Your inventory is full" << endl;
+                    return;
                 }
             }
-            break;
+            cout << "Your inventory is full." << endl;
+            return;
         }
     }
+    cout << "No item \"" << name << "\" found in this room." << endl;
 }
 
-void actionDrop(string name)
+void actionDrop(string name) //drops the given item from inventory to the room
 {
     for(int i = 0; i < 16; i++)
     {
@@ -426,21 +651,32 @@ void actionDrop(string name)
                     cout << "Dropped " << name << endl;
                     map[player.y][player.x].items[j] = player.items[i];
                     player.items[i] = emptyItem;
-                    break;
-                }
-                if(j == 15)
-                {
-                    cout << "The room is full, you can not drop your item." << endl;
+                    return;
                 }
             }
-            break;
+            cout << "The room is full, you can not drop your item." << endl;
+            return;
         }
     }
+    cout << "No item \"" << name << "\" found in your inventory." << endl;
+}
+
+void actionInteract(string name) //interacts with the oject of the given name
+{
+    for(int i = 0; i < 16; i++)
+    {
+        if(strEquals(map[player.y][player.x].objects[i].name, name))
+        {
+            map[player.y][player.x].objects[i].interact();
+            return;
+        }
+    }
+    cout << "You stand alone, surroundings barren of anything helpful." << endl;
 }
 
 void actionNothing()
 {
-    cout << "You did nothing" << endl;
+    cout << "You did nothing." << endl;
 }
 
 void actionQuit()
@@ -449,14 +685,21 @@ void actionQuit()
     shouldQuitGame = getYesNo();
 }
 
-string getAction()
+void printHelp() //prints help menu
 {
-    cout << "What is your action this turn? ";
-    return getInput();
+    cout << "At the beginning of your turn you have any of the following actions:" << endl << endl;
+    cout << "Movement:" << endl << "\"Move North\" or \"Move N\"." << endl << "\"Move East\" or \"Move E\"." << endl << "\"Move South\" or \"Move S\"." << endl << "\"Move West\" or \"Move W\"." << endl << endl;
+    cout << "Inspection:" << endl << "\"Inspect Room\" (Inspects room for items, objects, and enemies)." << endl << "\"Inspect Self\" (Shows player inventory and stats)" << endl << endl;
+    cout << "Picking up and dropping items:" << endl << "\"PickUp (item name)\"." << endl << "\"Drop (item name)\"." << endl << endl;
+    cout << "Doing nothing (idle) for your turn:" << endl << "\"Nothing\"" << endl << endl;
+    cout << "Quitting game:" <<  endl << "\"Quit\"" << endl << endl;
+    wait();
 }
 
-void setupMap()     //item starting locations
+void setupMap() //fills the rooms with items, objects, and enemies
 {
+    //items
+
     item knife;
     knife.name = "Knife";
     knife.damage = 1;
@@ -487,119 +730,111 @@ void setupMap()     //item starting locations
     axe.name = "Axe";
     axe.damage = 5;
     map[2][3].items[0] = axe;
+
+    //objects
+
+    object gri;
+    gri.name = "Genetic Reconstitution Interface";
+    gri.description = "A mysterious machine.";
+    gri.interact = &interactGRI;
+    map[3][3].objects[0] = gri;
+
+    //enemies
+
+    enemy worm;
+    worm.name = "Worm";
+    worm.damage = 0;
+    worm.maxHealth = 5;
+    worm.health = worm.maxHealth;
+    map[0][1].enemies[0] = worm;
 }
 
-void resetStatPoints()
-{
-    player.freePoints += player.strength;
-    player.freePoints += player.dexterity;
-    player.freePoints += player.fortitude;
-    player.freePoints += player.agility;
-
-    player.strength = 0;
-    player.dexterity = 0;
-    player.fortitude = 0;
-    player.agility = 0;
-}
-
-void allocateStat(string name, int& stat, bool startup)
-{
-    int statInput;
-    int prevAmnt;
-
-    cout << "How many points would you like in " << name << "?" << endl;
-    cin >> statInput;
-    cin.sync();
-    prevAmnt = stat;
-
-    if(startup)
-    {
-        stat = min(statInput, min(player.freePoints, 5));
-    }
-    else
-    {
-        stat = min(statInput, player.freePoints);
-    }
-
-    player.freePoints -= (stat - prevAmnt);
-}
-
-void allocateStatPoints(bool startup)
-{
-    allocateStat("strength", player.strength, startup);
-    allocateStat("dexterity", player.dexterity, startup);
-    allocateStat("fortitude", player.fortitude, startup);
-    allocateStat("agility", player.agility, startup);
-}
-
-void setup()
+void setup() //the function called when starting a new game
 {
     shouldQuitGame = false;
     player.maxHealth = getMaxHealth();
     player.health = player.maxHealth;
+    player.damage = player.strength / 2;
     setupMap();
 
     cout << "Welcome to Sura!" << endl << endl;
-    cout << "Your current stats are:" << endl;
-    cout << "Strength: " << player.strength << endl;
-    cout << "Dexterity: " << player.dexterity << endl;
-    cout << "Fortitude: " << player.fortitude << endl;
-    cout << "Agility: " << player.agility << endl;
-    cout << "Would you like to proceed?" << endl;
-    while (getYesNoOaths() == false)
+    cout << "We have given you balanced starting stats." << endl << "Would you like to continue without customizing them? ";
+    while (!getYesNoOaths())
     {
         resetStatPoints();
         allocateStatPoints(true);
-        cout << "Your current stats are:" << endl;
-        cout << "Strength: " << player.strength << endl;
-        cout << "Dexterity: " << player.dexterity << endl;
-        cout << "Fortitude: " << player.fortitude << endl;
-        cout << "Agility: " << player.agility << endl;
-        cout << "Unallocated points: " << player.freePoints << endl;
-        cout << "Allocated points: " << player.strength+player.dexterity+player.fortitude+player.agility << endl << endl;
+        printStats();
+        cout << endl;
 
-        cout << "Would you like to proceed?" << endl;
+        cout << "Would you like to proceed? ";
     }
 }
 
-void addStatPoints(int &stat, int amount)
+void fight(enemy &e) //fights the given enemy
 {
+    cout << "Entering fight with " << e.name << endl;
+    while(true)
+    {
+        cout << "Do you want to attack or flee? ";
+        string input = getInput();
+        if(strEquals(input, "attack") || strEquals(input, "a"))
+        {
+            e.health -= player.damage;
+            if(e.health <= 0)
+            {
+                cout << e.name << " has died" << endl;
+                e.health = 0;
+                e = emptyEnemy;
+                return;
+            }
+            else
+            {
+                cout << "You hit for " << player.damage << " damage. " << e.name << " is at " << e.health << "/" << e.maxHealth << " health." << endl;
+            }
+        }
+        else if(strEquals(input, "flee") || strEquals(input, "f"))
+        {
+            cout << "You fled the battle" << endl;
+            return;
+        }
+        else
+        {
+            cout << "\"Ha! You can't even type correctly!\"" << endl;
+        }
 
+        player.health -= e.damage;
+        cout << e.name << " hit you for " << e.damage << " damage. You are at " << player.health << "/" << player.maxHealth << " health." << endl;
+        if(player.health <= 0)
+        {
+            cout << "\"I warned you, but you wouldn't listen. Maybe next time...\"" << endl;
+            player.health = 0;
+        }
+    }
 }
 
-bool isBelowMin(int level, int stat)
+void actionFight(string e) //fights the enemy with the given name
 {
-    return stat <= level * 0.8 - 6;
+    for(int i = 0; i < 16; i++)
+    {
+        if(strEquals(map[player.y][player.x].enemies[i].name, e))
+        {
+            cout << "\"Are you sure you want to battle me?\" ";
+            if(getYesNo())
+            {
+                cout << "\"Don't say I didn't warn you!\"" << endl;
+                fight(map[player.y][player.x].enemies[i]);
+            }
+            else
+            {
+                cout << "\"What a coward!\"" << endl;
+            }
+            return;
+        }
+    }
+    cout << "No enemy with that name found" << endl;
 }
 
-bool isAboveMax(int level, int stat)
-{
-    return stat >= level * 1.25 + 3;
-}
-
-void applyTraits(character c)
-{
-    player.trait[0] = isBelowMin(player.level, player.strength);
-    player.trait[1] = isBelowMin(player.level, player.dexterity);
-    player.trait[2] = isBelowMin(player.level, player.fortitude);
-    player.trait[3] = isBelowMin(player.level, player.agility);
-    player.trait[4] = isAboveMax(player.level, player.strength);
-    player.trait[5] = isAboveMax(player.level, player.dexterity);
-    player.trait[6] = isAboveMax(player.level, player.fortitude);
-    player.trait[7] = isAboveMax(player.level, player.agility);
-}
-
-void printHelp()
-{
-    cout << "At the beginning of your turn you have any of the following actions:" << endl << endl;
-    cout << "Movement:" << endl << "\"Move North\" or \"Move N\"." << endl << "\"Move East\" or \"Move E\"." << endl << "\"Move South\" or \"Move S\"." << endl << "\"Move West\" or \"Move W\"." << endl << endl;
-    cout << "Inspection:" << endl << "\"Inspect Room\" (Inspects room for items, objects, and enemies)." << endl << "\"Inspect Self\" (Shows player inventory and stats)" << endl << endl;
-    cout << "Picking up and dropping items:" << endl << "\"PickUp (item name)\"." << endl << "\"Drop (item name)\"." << endl << endl;
-    cout << "Doing nothing (idle) for your turn:" << endl << "\"Nothing\"" << endl << endl;
-    cout << "Quitting game:" <<  endl << "\"Quit\"" << endl << endl;
-}
-
-void mainLoop()
+void mainLoop() //called to start the player's turn
 {
     cout << endl;
     string input = getAction();
@@ -607,6 +842,10 @@ void mainLoop()
     if(input.substr(0, 8) == "inspect ")
     {
         actionInspect(input.substr(8));
+    }
+    else if(input.substr(0, 6) == "fight ")
+    {
+        actionFight(input.substr(6));
     }
     else if(input.substr(0, 5) == "move ")
     {
@@ -619,6 +858,10 @@ void mainLoop()
     else if(input.substr(0, 5) == "drop ")
     {
         actionDrop(input.substr(5));
+    }
+    else if(input.substr(0, 9) == "interact ")
+    {
+        actionInteract(input.substr(9));
     }
     else if(input == "quit" || input == "q")
     {
@@ -639,39 +882,60 @@ void mainLoop()
     }
 }
 
-void endgame()
+void endgame() //the function called when exiting to main menu
 {
 
 }
 
-void mainMenu()
-{
-    cout << "Welcome to Sura!" << endl << endl;
-    cout << "   ~Play Game~" << endl << "      ~Help~" << endl << "         ~Credits~" << endl << "            ~Quit Sura~" << endl;
 
+void mainMenu() //the function called when going to main menu
+{
+    cout <<
+                                                        endl <<
+        "     @@@@@@   @@@  @@@  @@@@@@@    @@@@@@ " << endl <<
+        "    @@@@@@@   @@@  @@@  @@@@@@@@  @@@@@@@@" << endl <<
+        "    !@@       @@!  @@@  @@!  @@@  @@!  @@@" << endl <<
+        "    !@!       !@!  @!@  !@!  @!@  !@!  @!@" << endl <<
+        "    !!@@!!    @!@  !@!  @!@!!@!   @!@!@!@!" << endl <<
+        "     !!@!!!   !@!  !!!  !!@!@!    !!!@!!!!" << endl <<
+        "         !:!  !!:  !!!  !!: :!!   !!:  !!!" << endl <<
+        "        !:!   :!:  !:!  :!:  !:!  :!:  !:!" << endl <<
+        "    :::: ::   ::::: ::  ::   :::  ::   :::" << endl <<
+        "    :: : :     : :  :    :   : :   :   : :" << endl <<
+                                                        endl <<
+        "                 ~Play  Game~             " << endl <<
+        "                    ~Help~                " << endl <<
+        "                  ~Credits~               " << endl <<
+        "                 ~Quit  Sura~             " << endl <<
+                                                        endl;
 
     string input = getInput();
 
-    if(input == "play game")
+    if(input == "play game" || input == "p")
     {
         setup();
         while(!shouldQuitGame)
         {
             mainLoop();
         }
+        endgame();
     }
-    else if(input == "help")
+    else if(input == "help" || input == "h")
     {
         printHelp();
     }
-    else if(input == "credits")
+    else if(input == "credits" || input == "c")
     {
-        cout << "Two guys went over to a skrub's house and decided to learn C++.  The two guys and the one skrub then decided to form SkrubClub, and to make the project, sura, to better learn C++." << endl;
+        cout << "TGwTH: Coding" << endl;
+        cout << "     : Coding" << endl;
+        cout << "TK301: Coding" << endl;
+        wait();
     }
-    else if(input == "quit sura")
+    else if(input == "quit sura" || input == "q")
     {
-        shouldQuitSura = true;
-        endgame();
+        cout << "Are you sure you want to quit? ";
+        shouldQuitSura = getYesNo();
+        return;
     }
     else
     {
