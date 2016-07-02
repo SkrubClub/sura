@@ -234,66 +234,66 @@ struct room
 } map[4][4];
 
 bool doorH[4][3] = {
+    {true , false, true },
     {true , true , true },
-    {true , true , true },
-    {true , true , true },
+    {false, false, true },
     {true , true , true }
 };
 bool doorV[3][4] = {
-    {true , true , true , true },
-    {true , true , true , true },
+    {true , true , true , false},
+    {false, true , false, true },
     {true , true , true , true }
 };
 
 void playerMoveNorth()
 {
-    if(player.y > 0)
+    if(player.y > 0 && doorV[player.y - 1][player.x])
     {
         player.y--;
         cout << "You moved north" << endl;
     }
     else
     {
-        cout << "You are already as far north as you can move" << endl;
+        cout << "You cannot move north" << endl;
     }
 }
 
 void playerMoveEast()
 {
-    if(player.x < 3)
+    if(player.x < 3 && doorH[player.y][player.x])
     {
         player.x++;
         cout << "You moved east" << endl;
     }
     else
     {
-        cout << "You are already as far east as you can move" << endl;
+        cout << "You cannot move east" << endl;
     }
 }
 
 void playerMoveSouth()
 {
-    if(player.y < 3)
+    if(player.y < 3 && doorV[player.y][player.x])
     {
         player.y++;
         cout << "You moved south" << endl;
     }
     else
     {
-        cout << "You are already as far south as you can move" << endl;
+        cout << "You cannnot move south" << endl;
     }
 }
 
 void playerMoveWest()
 {
-    if(player.x > 0)
+    if(player.x > 0 && doorH[player.y][player.x - 1])
     {
         player.x--;
         cout << "You moved west" << endl;
     }
     else
     {
-        cout << "You are already as far west as you can move" << endl;
+        cout << "You cannot move west" << endl;
     }
 }
 
@@ -862,7 +862,7 @@ void mainMenu() //the function called when going to main menu
     else if(input == "credits" || input == "c")
     {
         cout << "TGwTH: Coding" << endl;
-        cout << "     : Coding" << endl;
+        cout << "Dev: Coding" << endl;
         cout << "TK301: Coding" << endl;
         wait();
     }
