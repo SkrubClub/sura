@@ -62,7 +62,7 @@ struct object
     string name;
     string description;
     int power;
-    void (*interact)();
+    void (*interact)(object &);
 };
 
 struct playercharacter //this represents the character; there is only ever one instance of it
@@ -75,9 +75,8 @@ struct playercharacter //this represents the character; there is only ever one i
     int fortitude = 4;
     int agility = 4;
     int intellect = 2;
-    //int wisdom = 2;
-    float luck = 0;   // Random number from 0-1;
-    //int karma = 0;
+    int wisdom = 2;
+    int karma = 0;
     int xpStr;
     int xpDex;
     int xpFor;
@@ -375,7 +374,7 @@ void applyTraits()
     player.trait[7] = isAboveMax(player.level, player.agility);
 }
 
-void interactATM()
+void interactATM(object &ATM)
 {
     string input;
     int random;
@@ -421,7 +420,37 @@ void interactATM()
     }
 }
 
-void interactDoctorIt()
+void interactHappyStatue(object &sadStatue)
+{
+    int randomMessage;
+    randomMessage = rand() % 1000;
+    cout << "It seems happy, somehow." << endl;
+    if(randomMessage == 0)
+    {
+        cout << "\"Thank you\"" << endl;
+    }
+}
+
+void interactSadStatue(object &sadStatue)
+{
+    int randomMessage;
+    randomMessage = rand() % 100;
+    cout << "It seems sad." << endl;
+    if(randomMessage == 0)
+    {
+        cout << "Comfort the statue?" << endl;
+        if(getYesNo())
+        {
+            cout << "The tears cease." << endl;
+            player.wisdom++;
+            sadStatue.name = "Statue";
+            sadStatue.description = "A statue of a child.";
+            sadStatue.interact = &interactHappyStatue;
+        }
+    }
+}
+
+void interactDoctorIt(object &doctorIt)
 {
     int random;
     string animal[12] = {"Ram","Bull","Twin","Crab","Lion","Maiden","Scale","Scorpion","Centaur","Sea-Goat","Water-Bearer","Fish"};
@@ -431,22 +460,56 @@ void interactDoctorIt()
     cout << "All done! You look healthy as a " << animal[random] << endl;
 }
 
-void interactGRI()
+void interactGRI(object &GRI)
 {
+    int loopLen = 1;
+
     cout << "Genetic Reconstitution Interface booting..." << endl;
-    cout << "GRI at 100% power, launching..." << endl;
+    cout << "GRI at ";
+    for(int i = 0; i < 101; i++)
+    {
+        if(i >= 10)
+        {
+            loopLen = 2;
+        }
+        if(i == 100)
+        {
+            loopLen = 3;
+        }
+        cout << i << "% power, ";
+        if(i < 100)
+        {
+            cout << "charging...";
+            for(int i2 = 0; i2 < 20+loopLen; i2++)
+            {
+                cout << '\b';
+            }
+        }
+        if(i == 100)
+        {
+            cout << "launching..." << endl;
+            break;
+        }
+    }
+
+    string strAdj[6] = {"sexy","devilish","enchanting","fascinating","spellbinding","majestic"};
+    string strNoun[7] = {"bad boy","wolf in sheep's clothing","baby kangaroo","siren","angel","mystery figure","minx"};
+    int randomAdj = rand() % 6;
+    int randomNoun = rand() % 7;
+
     printStats();
     allocateStatPoints(false);
     applyTraits();
-    cout << "Enjoy your new body!" << endl;
+    printStats();
+    cout << "Enjoy your new body, you " << strAdj[randomAdj] << " " << strNoun[randomNoun] << "." << endl;
 }
 
-void interactHoop()
+void interactHoop(object &hoop)
 {
     cout << "You're too short, kid." << endl;
 }
 
-void interactPunchingBag()
+void interactPunchingBag(object &punchingBag)
 {
     int randomDir;
     int randomMod;
@@ -463,6 +526,18 @@ void interactPunchingBag()
             player.health = max(player.health-((player.strength/2)+1),1);
         }
     }
+}
+
+void interactTotallyNormalWallN(object &totallyNormalWallN)
+{
+    cout << "That wasn't so hard." << endl;
+    player.y -= 1;
+}
+
+void interactTotallyNormalWallS(object &totallyNormalWallS)
+{
+    cout << "That wasn't so hard." << endl;
+    player.y += 1;
 }
 
 void inspectSelf() //prints the details of the player
@@ -651,7 +726,7 @@ void actionInteract(string name)
     {
         if(strEquals(map[player.y][player.x].objects[i].name, name))
         {
-            map[player.y][player.x].objects[i].interact();
+            map[player.y][player.x].objects[i].interact(map[player.y][player.x].objects[i]);
             return;
         }
     }
@@ -721,6 +796,13 @@ void setupMap() //fills the rooms with items, objects, and enemies
     atm.interact = &interactATM;
     map[0][0].objects[0] = atm;
 
+    object sadStatue;
+    sadStatue.name = "Crying Statue";
+    sadStatue.description = "A statue of a child. Water pours from its eyes.";
+    sadStatue.power = 0;
+    sadStatue.interact = &interactSadStatue;
+    map[3][1].objects[0] = sadStatue;
+
     object doctorIt;
     doctorIt.name = "DoctorIt";
     doctorIt.description = "Probably from a diploma factory.";
@@ -748,6 +830,20 @@ void setupMap() //fills the rooms with items, objects, and enemies
     punchingBag.power = 0;
     punchingBag.interact = &interactPunchingBag;
     map[1][1].objects[0] = punchingBag;
+
+    object totallyNormalWallN;
+    totallyNormalWallN.name = "Totally Normal Wall";
+    totallyNormalWallN.description = "A Totally Normal Wall.";
+    totallyNormalWallN.power = 0;
+    totallyNormalWallN.interact = &interactTotallyNormalWallN;
+    map[3][0].objects[0] = totallyNormalWallN;
+
+    object totallyNormalWallS;
+    totallyNormalWallS.name = "Totally Normal Wall";
+    totallyNormalWallS.description = "A Totally Normal Wall.";
+    totallyNormalWallS.power = 0;
+    totallyNormalWallS.interact = &interactTotallyNormalWallS;
+    map[2][0].objects[0] = totallyNormalWallS;
 }
 
 void setup() //the function called when starting a new game
