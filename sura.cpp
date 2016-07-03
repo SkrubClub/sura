@@ -228,6 +228,7 @@ int getMaxHealth() //calculates the players max health
 
 struct room
 {
+    bool isRevealed = false;
     item items[16];
     object objects[16];
     enemy enemies[16];
@@ -245,12 +246,62 @@ bool doorV[3][4] = {
     {true , true , true , true }
 };
 
+void printMap(bool allVision)
+{
+    char result[9][13];
+    for(int y = 0; y < 9; y++)
+    {
+	for(int x = 0; x < 13; x++)
+        {
+            result[y][x] = ':';
+	}
+    }
+	
+    for(int y = 0; y < 4; y++)
+    {
+        for(int x = 0; x < 4; x++)
+        {
+	    if(map[y][x].isRevealed || allVision)
+	    {
+	        bool doorN = (y == 0 || !doorV[y - 1][x]);
+	        bool doorS = (y == 3 || !doorV[y][x]);
+	        bool doorE = (x == 3 || !doorH[y][x]);
+	        bool doorW = (x == 0 || !doorH[y][x - 1]);
+		bool isPlayer = x == player.x && y == player.y;
+		
+		result[y * 2    ][x * 3    ] = '+';
+		result[y * 2    ][x * 3 + 1] = doorN ? '-' : ' ';
+		result[y * 2    ][x * 3 + 2] = doorN ? '-' : ' ';
+		result[y * 2    ][x * 3 + 3] = '+';
+		result[y * 2 + 1][x * 3    ] = doorW ? '|' : ' ';
+		result[y * 2 + 1][x * 3 + 1] = isPlayer ? '@' : ' ';
+		result[y * 2 + 1][x * 3 + 2] = isPlayer ? '@' : ' ';
+		result[y * 2 + 1][x * 3 + 3] = doorE ? '|' : ' ';
+		result[y * 2 + 2][x * 3    ] = '+';
+		result[y * 2 + 2][x * 3 + 1] = doorS ? '-' : ' ';
+		result[y * 2 + 2][x * 3 + 2] = doorS ? '-' : ' ';
+		result[y * 2 + 2][x * 3 + 3] = '+';
+	    }
+        }
+    }
+    
+    for(int y = 0; y < 9; y++)
+    {
+	for(int x = 0; x < 13; x++)
+        {
+            cout << result[y][x];
+	}
+	cout << endl;
+    }
+}
+
 void playerMoveNorth()
 {
     if(player.y > 0 && doorV[player.y - 1][player.x])
     {
         player.y--;
         cout << "You moved north" << endl;
+	map[player.y][player.x].isRevealed = true;
     }
     else
     {
@@ -264,6 +315,7 @@ void playerMoveEast()
     {
         player.x++;
         cout << "You moved east" << endl;
+	map[player.y][player.x].isRevealed = true;
     }
     else
     {
@@ -277,6 +329,7 @@ void playerMoveSouth()
     {
         player.y++;
         cout << "You moved south" << endl;
+	map[player.y][player.x].isRevealed = true;
     }
     else
     {
@@ -290,6 +343,7 @@ void playerMoveWest()
     {
         player.x--;
         cout << "You moved west" << endl;
+	map[player.y][player.x].isRevealed = true;
     }
     else
     {
@@ -609,6 +663,11 @@ void actionInteract(string name) //interacts with the oject of the given name
     cout << "You stand alone, surroundings barren of anything helpful." << endl;
 }
 
+void actionMap()
+{
+    printMap(false);
+}
+
 void actionNothing()
 {
     cout << "You did nothing." << endl;
@@ -633,6 +692,8 @@ void printHelp() //prints help menu
 
 void setupMap() //fills the rooms with items, objects, and enemies
 {
+    map[player.y][player.x].isRevealed = true;
+
     //items
 
     item knife;
@@ -798,6 +859,10 @@ void mainLoop() //called to start the player's turn
     {
         actionInteract(input.substr(9));
     }
+    else if(input == "map")
+    {
+        actionMap();
+    }
     else if(input == "quit" || input == "q")
     {
         actionQuit();
@@ -862,7 +927,7 @@ void mainMenu() //the function called when going to main menu
     else if(input == "credits" || input == "c")
     {
         cout << "TGwTH: Coding" << endl;
-        cout << "Dev: Coding" << endl;
+        cout << "     : Coding" << endl;
         cout << "TK301: Coding" << endl;
         wait();
     }
