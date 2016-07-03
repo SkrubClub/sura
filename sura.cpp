@@ -228,60 +228,126 @@ int getMaxHealth() //calculates the players max health
 
 struct room
 {
+    bool isRevealed = false;
     item items[16];
     object objects[16];
     enemy enemies[16];
 } map[4][4];
 
+bool doorH[4][3] = {
+    {true , false, true },
+    {true , true , true },
+    {false, false, true },
+    {true , true , true }
+};
+bool doorV[3][4] = {
+    {true , true , true , false},
+    {false, true , false, true },
+    {true , true , true , true }
+};
+
+void printMap(bool allVision)
+{
+    char result[9][13];
+    for(int y = 0; y < 9; y++)
+    {
+	for(int x = 0; x < 13; x++)
+        {
+            result[y][x] = ':';
+	}
+    }
+	
+    for(int y = 0; y < 4; y++)
+    {
+        for(int x = 0; x < 4; x++)
+        {
+	    if(map[y][x].isRevealed || allVision)
+	    {
+	        bool doorN = (y == 0 || !doorV[y - 1][x]);
+	        bool doorS = (y == 3 || !doorV[y][x]);
+	        bool doorE = (x == 3 || !doorH[y][x]);
+	        bool doorW = (x == 0 || !doorH[y][x - 1]);
+		bool isPlayer = x == player.x && y == player.y;
+		
+		result[y * 2    ][x * 3    ] = '+';
+		result[y * 2    ][x * 3 + 1] = doorN ? '-' : ' ';
+		result[y * 2    ][x * 3 + 2] = doorN ? '-' : ' ';
+		result[y * 2    ][x * 3 + 3] = '+';
+		result[y * 2 + 1][x * 3    ] = doorW ? '|' : ' ';
+		result[y * 2 + 1][x * 3 + 1] = isPlayer ? '@' : ' ';
+		result[y * 2 + 1][x * 3 + 2] = isPlayer ? '@' : ' ';
+		result[y * 2 + 1][x * 3 + 3] = doorE ? '|' : ' ';
+		result[y * 2 + 2][x * 3    ] = '+';
+		result[y * 2 + 2][x * 3 + 1] = doorS ? '-' : ' ';
+		result[y * 2 + 2][x * 3 + 2] = doorS ? '-' : ' ';
+		result[y * 2 + 2][x * 3 + 3] = '+';
+	    }
+        }
+    }
+    
+    for(int y = 0; y < 9; y++)
+    {
+	for(int x = 0; x < 13; x++)
+        {
+            cout << result[y][x];
+	}
+	cout << endl;
+    }
+}
+
 void playerMoveNorth()
 {
-    if(player.y > 0)
+    if(player.y > 0 && doorV[player.y - 1][player.x])
     {
         player.y--;
         cout << "You moved north" << endl;
+	map[player.y][player.x].isRevealed = true;
     }
     else
     {
-        cout << "You are already as far north as you can move" << endl;
+        cout << "You cannot move north" << endl;
     }
 }
 
 void playerMoveEast()
 {
-    if(player.x < 3)
+    if(player.x < 3 && doorH[player.y][player.x])
     {
         player.x++;
         cout << "You moved east" << endl;
+	map[player.y][player.x].isRevealed = true;
     }
     else
     {
-        cout << "You are already as far east as you can move" << endl;
+        cout << "You cannot move east" << endl;
     }
 }
 
 void playerMoveSouth()
 {
-    if(player.y < 3)
+    if(player.y < 3 && doorV[player.y][player.x])
     {
         player.y++;
         cout << "You moved south" << endl;
+	map[player.y][player.x].isRevealed = true;
     }
     else
     {
-        cout << "You are already as far south as you can move" << endl;
+        cout << "You cannnot move south" << endl;
     }
 }
 
 void playerMoveWest()
 {
-    if(player.x > 0)
+    if(player.x > 0 && doorH[player.y][player.x - 1])
     {
         player.x--;
         cout << "You moved west" << endl;
+	map[player.y][player.x].isRevealed = true;
     }
     else
     {
-        cout << "You are already as far west as you can move" << endl;
+        cout << "You cannot move west" << endl;
     }
 }
 
@@ -597,6 +663,11 @@ void actionInteract(string name) //interacts with the oject of the given name
     cout << "You stand alone, surroundings barren of anything helpful." << endl;
 }
 
+void actionMap()
+{
+    printMap(false);
+}
+
 void actionNothing()
 {
     cout << "You did nothing." << endl;
@@ -621,6 +692,8 @@ void printHelp() //prints help menu
 
 void setupMap() //fills the rooms with items, objects, and enemies
 {
+    map[player.y][player.x].isRevealed = true;
+
     //items
 
     item knife;
@@ -785,6 +858,10 @@ void mainLoop() //called to start the player's turn
     else if(input.substr(0, 9) == "interact ")
     {
         actionInteract(input.substr(9));
+    }
+    else if(input == "map")
+    {
+        actionMap();
     }
     else if(input == "quit" || input == "q")
     {
