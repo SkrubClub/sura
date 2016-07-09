@@ -466,17 +466,17 @@ void interactGRI(object &GRI)
 
     cout << "Genetic Reconstitution Interface booting..." << endl;
     cout << "GRI at ";
-    for(int i = 0; i < 101; i++)
+    for(float i = 0; i < 100.025; i += 0.025)
     {
         if(i >= 10)
         {
             loopLen = 2;
         }
-        if(i == 100)
+        if(i >= 100)
         {
             loopLen = 3;
         }
-        cout << i << "% power, ";
+        cout << floor(i) << "% power, ";
         if(i < 100)
         {
             cout << "charging...";
