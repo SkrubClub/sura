@@ -268,15 +268,15 @@ void printMap(bool allVision)
 	}
     }
 	
-    for(int y = 0; y < 4; y++)
+    for(int y = 0; y < 5; y++)
     {
-        for(int x = 0; x < 4; x++)
+        for(int x = 0; x < 5; x++)
         {
 	    if(map[y][x].isRevealed || allVision)
 	    {
 	        bool doorN = (y == 0 || !doorV[y - 1][x]);
-	        bool doorS = (y == 3 || !doorV[y][x]);
-	        bool doorE = (x == 3 || !doorH[y][x]);
+	        bool doorS = (y == 4 || !doorV[y][x]);
+	        bool doorE = (x == 4 || !doorH[y][x]);
 	        bool doorW = (x == 0 || !doorH[y][x - 1]);
 		bool isPlayer = x == player.x && y == player.y;
 		
@@ -322,7 +322,7 @@ void playerMoveNorth()
 
 void playerMoveEast()
 {
-    if(player.x < 3 && doorH[player.y][player.x])
+    if(player.x < 4 && doorH[player.y][player.x])
     {
         player.x++;
         cout << "You moved east" << endl;
@@ -336,7 +336,7 @@ void playerMoveEast()
 
 void playerMoveSouth()
 {
-    if(player.y < 3 && doorV[player.y][player.x])
+    if(player.y < 4 && doorV[player.y][player.x])
     {
         player.y++;
         cout << "You moved south" << endl;
