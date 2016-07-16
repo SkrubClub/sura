@@ -252,7 +252,7 @@ bool doorH[4][3] = {
 bool doorV[3][4] = {
     {true , true , true , false},
     {false, true , false, true },
-    {true , true , true , true }
+    {false, true , true , true }
 };
 
 void printMap(bool allVision)
