@@ -259,10 +259,10 @@ bool doorV[4][5] = {
 
 void printMap(bool allVision)
 {
-    char result[9][13];
-    for(int y = 0; y < 9; y++)
+    char result[11][16];
+    for(int y = 0; y < 11; y++)
     {
-	for(int x = 0; x < 13; x++)
+	for(int x = 0; x < 16; x++)
         {
             result[y][x] = ':';
 	}
@@ -296,9 +296,9 @@ void printMap(bool allVision)
         }
     }
     
-    for(int y = 0; y < 9; y++)
+    for(int y = 0; y < 11; y++)
     {
-	for(int x = 0; x < 13; x++)
+	for(int x = 0; x < 16; x++)
         {
             cout << result[y][x];
 	}
