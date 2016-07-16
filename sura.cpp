@@ -241,18 +241,20 @@ struct room
     item items[16];
     object objects[16];
     enemy enemies[16];
-} map[4][4];
+} map[5][5];
 
-bool doorH[4][3] = {
-    {true , false, true },
-    {true , true , true },
-    {false, false, true },
-    {true , true , true }
+bool doorH[5][4] = {
+    {true , false, true , true },
+    {true , true , true , true },
+    {false, false, true , true },
+    {true , true , true , true },
+    {true , true , true , true }
 };
-bool doorV[3][4] = {
-    {true , true , true , false},
-    {false, true , false, true },
-    {false, true , true , true }
+bool doorV[4][5] = {
+    {true , true , true , false, false},
+    {false, true , false, true , true },
+    {false, true , true , true , true },
+    {false, true , true , true , true }
 };
 
 void printMap(bool allVision)
@@ -804,7 +806,7 @@ void setupMap() //fills the rooms with items, objects, and enemies
     item ironArmor;
     ironArmor.name = "Iron Armor";
     ironArmor.health = 10;
-    map[2][2].items[0] = ironArmor;
+    map[3][3].items[0] = ironArmor;
 
     item sword;
     sword.name = "Sword";
