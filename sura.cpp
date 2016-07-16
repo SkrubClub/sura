@@ -861,6 +861,62 @@ void setupMap() //fills the rooms with items, objects, and enemies
     worm.maxHealth = 5;
     worm.health = worm.maxHealth;
     map[0][1].enemies[0] = worm;
+    
+    enemy worm2;
+    worm2.name = "Grub";
+    worm2.damage = 0;
+    worm2.maxHealth = 5;
+    worm2.health = worm2.maxHealth;
+    map[0][2].enemies[0] = worm2;
+    
+    enemy worm3;
+    worm3.name = "Caterpiller";
+    worm3.damage = 0;
+    worm3.maxHealth = 5;
+    worm3.health = worm3.maxHealth;
+    map[2][1].enemies[0] = worm3;
+    
+    enemy worm4;
+    worm4.name = "Worm";
+    worm4.damage = 0;
+    worm4.maxHealth = 5;
+    worm4.health = worm4.maxHealth;
+    map[2][2].enemies[0] = worm4;
+    
+    enemy worm5;
+    worm5.name = "Grub";
+    worm5.damage = 0;
+    worm5.maxHealth = 5;
+    worm5.health = worm5.maxHealth;
+    map[2][2].enemies[1] = worm5;
+    
+    enemy worm6;
+    worm6.name = "Worm";
+    worm6.damage = 0;
+    worm6.maxHealth = 5;
+    worm6.health = worm6.maxHealth;
+    map[3][3].enemies[0] = worm6;
+    
+    enemy worm7;
+    worm7.name = "Grub";
+    worm7.damage = 0;
+    worm7.maxHealth = 5;
+    worm7.health = worm7.maxHealth;
+    map[3][3].enemies[1] = worm7;
+    
+    enemy worm8;
+    worm8.name = "Caterpillar";
+    worm8.damage = 0;
+    worm8.maxHealth = 5;
+    worm8.health = worm8.maxHealth;
+    map[3][3].enemies[2] = worm8;
+    
+    enemy worm9;
+    worm9.name = "Inch Worm";
+    worm9.damage = 0;
+    worm9.maxHealth = 5;
+    worm9.health = worm9.maxHealth;
+    map[3][3].enemies[3] = worm9;
 }
 
 void setup() //the function called when starting a new game
