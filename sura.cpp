@@ -65,6 +65,11 @@ struct object
     void (*interact)();
 };
 
+void printObject(object obj)
+{
+    cout << obj.name << endl << obj.description << endl;
+}
+
 struct playercharacter //this represents the character; there is only ever one instance of it
 {
     int level = 1;
@@ -165,6 +170,11 @@ string getHealthBar(int health, int maxHealth) //gets a string that visually rep
     }
     healthBar += "]";
     return healthBar;
+}
+
+void printEnemy(enemy en)
+{
+    cout << en.name << ": " << en.damage << " damage, " << getHealthBar(en.health, en.maxHealth) << endl;
 }
 
 string getInput() //gets a line of text that the user enters and returns that line, lowercase
@@ -667,7 +677,7 @@ void actionInspect(string inspection) //prints the details of the thing specifie
         {
             if(strEquals(map[player.y][player.x].objects[j].name, inspection))
             {
-                //TODO: add printObject(map[player.y][player.x].objects[j]);
+                printObject(map[player.y][player.x].objects[j]);
                 thingFound = true;
             }
         }
@@ -676,7 +686,7 @@ void actionInspect(string inspection) //prints the details of the thing specifie
         {
             if(strEquals(map[player.y][player.x].enemies[j].name, inspection))
             {
-                //TODO: add printEnemy(map[player.y][player.x].enemies[j]);
+                printEnemy(map[player.y][player.x].enemies[j]);
                 thingFound = true;
             }
         }
