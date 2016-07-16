@@ -1,7 +1,9 @@
 #include <algorithm>
 #include <cstdio>
 #include <iostream>
+#include <math.h>
 #include <sstream>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string>
 #include <time.h>
@@ -59,10 +61,11 @@ struct object
 {
     string name;
     string description;
+    int power;
     void (*interact)();
 };
 
-struct playercharacter //this represents the character; there is oly ever one instance of it
+struct playercharacter //this represents the character; there is only ever one instance of it
 {
     int level = 1;
     int freePoints = 0; // 12 total
@@ -75,6 +78,12 @@ struct playercharacter //this represents the character; there is oly ever one in
     //int wisdom = 2;
     float luck = 0;   // Random number from 0-1;
     //int karma = 0;
+    int xpStr;
+    int xpDex;
+    int xpFor;
+    int xpAgi;
+    int xpInt;
+    int xpWis;
 
     /* Traits
 
@@ -228,6 +237,7 @@ int getMaxHealth() //calculates the players max health
 
 struct room
 {
+    bool isRevealed = false;
     item items[16];
     object objects[16];
     enemy enemies[16];
@@ -245,12 +255,62 @@ bool doorV[3][4] = {
     {false, true , true , true }
 };
 
+void printMap(bool allVision)
+{
+    char result[9][13];
+    for(int y = 0; y < 9; y++)
+    {
+	for(int x = 0; x < 13; x++)
+        {
+            result[y][x] = ':';
+	}
+    }
+	
+    for(int y = 0; y < 4; y++)
+    {
+        for(int x = 0; x < 4; x++)
+        {
+	    if(map[y][x].isRevealed || allVision)
+	    {
+	        bool doorN = (y == 0 || !doorV[y - 1][x]);
+	        bool doorS = (y == 3 || !doorV[y][x]);
+	        bool doorE = (x == 3 || !doorH[y][x]);
+	        bool doorW = (x == 0 || !doorH[y][x - 1]);
+		bool isPlayer = x == player.x && y == player.y;
+		
+		result[y * 2    ][x * 3    ] = '+';
+		result[y * 2    ][x * 3 + 1] = doorN ? '-' : ' ';
+		result[y * 2    ][x * 3 + 2] = doorN ? '-' : ' ';
+		result[y * 2    ][x * 3 + 3] = '+';
+		result[y * 2 + 1][x * 3    ] = doorW ? '|' : ' ';
+		result[y * 2 + 1][x * 3 + 1] = isPlayer ? '@' : ' ';
+		result[y * 2 + 1][x * 3 + 2] = isPlayer ? '@' : ' ';
+		result[y * 2 + 1][x * 3 + 3] = doorE ? '|' : ' ';
+		result[y * 2 + 2][x * 3    ] = '+';
+		result[y * 2 + 2][x * 3 + 1] = doorS ? '-' : ' ';
+		result[y * 2 + 2][x * 3 + 2] = doorS ? '-' : ' ';
+		result[y * 2 + 2][x * 3 + 3] = '+';
+	    }
+        }
+    }
+    
+    for(int y = 0; y < 9; y++)
+    {
+	for(int x = 0; x < 13; x++)
+        {
+            cout << result[y][x];
+	}
+	cout << endl;
+    }
+}
+
 void playerMoveNorth()
 {
     if(player.y > 0 && doorV[player.y - 1][player.x])
     {
         player.y--;
         cout << "You moved north" << endl;
+	map[player.y][player.x].isRevealed = true;
     }
     else
     {
@@ -264,6 +324,7 @@ void playerMoveEast()
     {
         player.x++;
         cout << "You moved east" << endl;
+	map[player.y][player.x].isRevealed = true;
     }
     else
     {
@@ -277,6 +338,7 @@ void playerMoveSouth()
     {
         player.y++;
         cout << "You moved south" << endl;
+	map[player.y][player.x].isRevealed = true;
     }
     else
     {
@@ -290,6 +352,7 @@ void playerMoveWest()
     {
         player.x--;
         cout << "You moved west" << endl;
+	map[player.y][player.x].isRevealed = true;
     }
     else
     {
@@ -378,6 +441,62 @@ void applyTraits()
     player.trait[7] = isAboveMax(player.level, player.agility);
 }
 
+void interactATM()
+{
+    string input;
+    int random;
+    char pi[18] = {'3','.','1','4','1','5','9','2','6','5','3','5','8','9','7','9','3','2'};
+
+    if(1==1)
+    {
+        cout << "Hello! I am an Automated Telling Machine, or \'ATM\' for short." << endl;
+        cout << "I am an invaluable resource at your disposal, standing at the ready to elucidate your surroundings at a moment's notice!" << endl;
+        cout << "My heart's only desire is to explain. Please, ask me a question!" << endl;
+    }
+    input = getInput();
+    if(input.at(0)!=' ')
+    {
+        srand(time(NULL));
+        random = rand() % 4;
+        if(random==0)
+        {
+            cout << "Why indeed, my friend. Why indeed." << endl;
+        } else
+        if(random==1)
+        {
+            cout << "\"Time I'm done?\" Why, done explaining how to use me, of course!" << endl;
+        } else
+        if(random==2)
+        {
+            cout << "Want to hear a knock knock joke?" << endl;
+            getInput();
+            cout << "OK, here goes:" << endl << endl;
+            cout << "Knock knock" << endl;
+            cout << "Open up the door" << endl;
+            cout << "It's real" << endl;
+            cout << "With the nonstop pop-pop" << endl;
+            cout << "And stainless steel" << endl;
+        }
+        if(random==3)
+        {
+            for(int i = 0; i < 18; i++)
+            {
+                cout << pi[i] << endl;
+            }
+        }
+    }
+}
+
+void interactDoctorIt()
+{
+    int random;
+    string animal[12] = {"Ram","Bull","Twin","Crab","Lion","Maiden","Scale","Scorpion","Centaur","Sea-Goat","Water-Bearer","Fish"};
+    random = rand() % 12;
+
+    player.health = player.fortitude*3 + 1;
+    cout << "All done! You look healthy as a " << animal[random] << endl;
+}
+
 void interactGRI()
 {
     cout << "Genetic Reconstitution Interface booting..." << endl;
@@ -386,6 +505,30 @@ void interactGRI()
     allocateStatPoints(false);
     applyTraits();
     cout << "Enjoy your new body!" << endl;
+}
+
+void interactHoop()
+{
+    cout << "You're too short, kid." << endl;
+}
+
+void interactPunchingBag()
+{
+    int randomDir;
+    int randomMod;
+    string swingDirection[8] = {"to the left.","diagonally left and backwards.","backwards.","diagonally right and backwards.","to the right.","diagonally right and forwards.","forwards and hits you in the face!","diagonally left and forwards."};
+    string swingMod[10] = {"lackadaisically","apathetically","vigorously","energetically","excitedly","happily","tragically","boredly","balefully","rapidly"};
+    randomDir = rand() % 8;
+    randomMod = rand() % 10;
+    cout << "Hit the punching bag?" << endl;
+    if(getYesNo())
+    {
+        cout << "The bag swings " << swingMod[randomMod] << " " << swingDirection[randomDir] << endl;
+        if(randomDir == 6)
+        {
+            player.health = max(player.health-((player.strength/2)+1),1);
+        }
+    }
 }
 
 void inspectSelf() //prints the details of the player
@@ -609,6 +752,11 @@ void actionInteract(string name) //interacts with the oject of the given name
     cout << "You stand alone, surroundings barren of anything helpful." << endl;
 }
 
+void actionMap()
+{
+    printMap(false);
+}
+
 void actionNothing()
 {
     cout << "You did nothing." << endl;
@@ -633,6 +781,8 @@ void printHelp() //prints help menu
 
 void setupMap() //fills the rooms with items, objects, and enemies
 {
+    map[player.y][player.x].isRevealed = true;
+
     //items
 
     item knife;
@@ -668,11 +818,40 @@ void setupMap() //fills the rooms with items, objects, and enemies
 
     //objects
 
+    object atm;
+    atm.name = "ATM";
+    atm.description = "Doesn't look the way you remember.";
+    atm.power = 0;
+    atm.interact = &interactATM;
+    map[0][0].objects[0] = atm;
+
+    object doctorIt;
+    doctorIt.name = "DoctorIt";
+    doctorIt.description = "Probably from a diploma factory.";
+    doctorIt.power = 0;
+    doctorIt.interact = &interactDoctorIt;
+    map[0][3].objects[0] = doctorIt;
+
     object gri;
     gri.name = "Genetic Reconstitution Interface";
     gri.description = "A mysterious machine.";
+    gri.power = 0;
     gri.interact = &interactGRI;
     map[3][3].objects[0] = gri;
+
+    object hoop;
+    hoop.name = "Hoop";
+    hoop.description = "Fibrous material, woven into a mesh, affixed to a metal torus, welded to a plastic board, supported by a formidable cylinder.";
+    hoop.power = 0;
+    hoop.interact = &interactHoop;
+    map[2][3].objects[0] = hoop;
+
+    object punchingBag;
+    punchingBag.name = "Punching Bag";
+    punchingBag.description = "From the tangles of my heart...";
+    punchingBag.power = 0;
+    punchingBag.interact = &interactPunchingBag;
+    map[1][1].objects[0] = punchingBag;
 
     //enemies
 
@@ -682,10 +861,67 @@ void setupMap() //fills the rooms with items, objects, and enemies
     worm.maxHealth = 5;
     worm.health = worm.maxHealth;
     map[0][1].enemies[0] = worm;
+    
+    enemy worm2;
+    worm2.name = "Grub";
+    worm2.damage = 0;
+    worm2.maxHealth = 5;
+    worm2.health = worm2.maxHealth;
+    map[0][2].enemies[0] = worm2;
+    
+    enemy worm3;
+    worm3.name = "Caterpiller";
+    worm3.damage = 0;
+    worm3.maxHealth = 5;
+    worm3.health = worm3.maxHealth;
+    map[2][1].enemies[0] = worm3;
+    
+    enemy worm4;
+    worm4.name = "Worm";
+    worm4.damage = 0;
+    worm4.maxHealth = 5;
+    worm4.health = worm4.maxHealth;
+    map[2][2].enemies[0] = worm4;
+    
+    enemy worm5;
+    worm5.name = "Grub";
+    worm5.damage = 0;
+    worm5.maxHealth = 5;
+    worm5.health = worm5.maxHealth;
+    map[2][2].enemies[1] = worm5;
+    
+    enemy worm6;
+    worm6.name = "Worm";
+    worm6.damage = 0;
+    worm6.maxHealth = 5;
+    worm6.health = worm6.maxHealth;
+    map[3][3].enemies[0] = worm6;
+    
+    enemy worm7;
+    worm7.name = "Grub";
+    worm7.damage = 0;
+    worm7.maxHealth = 5;
+    worm7.health = worm7.maxHealth;
+    map[3][3].enemies[1] = worm7;
+    
+    enemy worm8;
+    worm8.name = "Caterpillar";
+    worm8.damage = 0;
+    worm8.maxHealth = 5;
+    worm8.health = worm8.maxHealth;
+    map[3][3].enemies[2] = worm8;
+    
+    enemy worm9;
+    worm9.name = "Inch Worm";
+    worm9.damage = 0;
+    worm9.maxHealth = 5;
+    worm9.health = worm9.maxHealth;
+    map[3][3].enemies[3] = worm9;
 }
 
 void setup() //the function called when starting a new game
 {
+    srand(time(NULL));
     shouldQuitGame = false;
     player.maxHealth = getMaxHealth();
     player.health = player.maxHealth;
@@ -798,6 +1034,10 @@ void mainLoop() //called to start the player's turn
     {
         actionInteract(input.substr(9));
     }
+    else if(input == "map")
+    {
+        actionMap();
+    }
     else if(input == "quit" || input == "q")
     {
         actionQuit();
@@ -862,7 +1102,7 @@ void mainMenu() //the function called when going to main menu
     else if(input == "credits" || input == "c")
     {
         cout << "TGwTH: Coding" << endl;
-        cout << "Dev: Coding" << endl;
+        cout << "     : Coding" << endl;
         cout << "TK301: Coding" << endl;
         wait();
     }
