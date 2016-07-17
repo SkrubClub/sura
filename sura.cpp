@@ -244,16 +244,16 @@ struct room
 } map[5][5];
 
 bool doorH[5][4] = {
+    {true , false, true , false},
+    {false, true , true , true },
     {true , false, true , true },
-    {true , true , true , true },
-    {false, false, true , true },
-    {true , true , true , true },
-    {true , true , true , true }
+    {false, true , false, true },
+    {true , false, true , true }
 };
 bool doorV[4][5] = {
-    {true , true , true , false, false},
-    {false, true , false, true , true },
-    {false, true , true , true , true },
+    {true , true , true , false, true },
+    {true , true , false, true , false},
+    {false, true , false, false, true },
     {false, true , true , true , true }
 };
 
@@ -790,33 +790,43 @@ void setupMap() //fills the rooms with items, objects, and enemies
     item knife;
     knife.name = "Knife";
     knife.damage = 1;
-    map[0][0].items[0] = knife;
+    map[1][0].items[0] = knife;
 
-    item leatherArmor;
-    leatherArmor.name = "Leather Armor";
-    leatherArmor.health = 5;
-    map[1][1].items[0] = leatherArmor;
+    item leatherChestPlate;
+    leatherChestPlate.name = "Leather Chest Plate";
+    leatherChestPlate.health = 2;
+    map[1][1].items[0] = leatherChestPlate;
+    
+    item leatherVambraces;
+    leatherVambraces.name = "Leather Vambraces";
+    leatherVambraces.health = 2;
+    map[1][3].items[0] = leatherVambraces;
+    
+    item leatherGreaves;
+    leatherGreaves.name = "Leather Greaves";
+    leatherGreaves.health = 2;
+    map[2][1].items[0] = leatherGreaves;
 
     item shield;
     shield.name = "Shield";
-    shield.health = 3;
-    map[2][1].items[0] = shield;
-    map[1][2].items[0] = shield;
+    shield.health = 5;
+    map[3][1].items[0] = shield;
+    map[0][2].items[0] = shield;
 
     item ironArmor;
     ironArmor.name = "Iron Armor";
-    ironArmor.health = 10;
+    ironArmor.health = 15;
     map[3][3].items[0] = ironArmor;
 
     item sword;
     sword.name = "Sword";
-    sword.damage = 5;
-    map[3][2].items[0] = sword;
+    sword.damage = 7;
+    map[4][3].items[0] = sword;
 
     item axe;
     axe.name = "Axe";
-    axe.damage = 5;
-    map[2][3].items[0] = axe;
+    axe.damage = 7;
+    map[3][4].items[0] = axe;
 
     //objects
 
@@ -832,93 +842,93 @@ void setupMap() //fills the rooms with items, objects, and enemies
     doctorIt.description = "Probably from a diploma factory.";
     doctorIt.power = 0;
     doctorIt.interact = &interactDoctorIt;
-    map[0][3].objects[0] = doctorIt;
+    map[0][4].objects[0] = doctorIt;
 
     object gri;
     gri.name = "Genetic Reconstitution Interface";
     gri.description = "A mysterious machine.";
     gri.power = 0;
     gri.interact = &interactGRI;
-    map[3][3].objects[0] = gri;
+    map[4][4].objects[0] = gri;
 
     object hoop;
     hoop.name = "Hoop";
     hoop.description = "Fibrous material, woven into a mesh, affixed to a metal torus, welded to a plastic board, supported by a formidable cylinder.";
     hoop.power = 0;
     hoop.interact = &interactHoop;
-    map[2][3].objects[0] = hoop;
+    map[2][2].objects[0] = hoop;
 
     object punchingBag;
     punchingBag.name = "Punching Bag";
     punchingBag.description = "From the tangles of my heart...";
     punchingBag.power = 0;
     punchingBag.interact = &interactPunchingBag;
-    map[1][1].objects[0] = punchingBag;
+    map[2][0].objects[0] = punchingBag;
 
     //enemies
 
     enemy worm;
     worm.name = "Worm";
-    worm.damage = 0;
-    worm.maxHealth = 5;
+    worm.damage = 1;
+    worm.maxHealth = 2;
     worm.health = worm.maxHealth;
     map[0][1].enemies[0] = worm;
     
     enemy worm2;
     worm2.name = "Grub";
-    worm2.damage = 0;
-    worm2.maxHealth = 5;
+    worm2.damage = 2;
+    worm2.maxHealth = 2;
     worm2.health = worm2.maxHealth;
     map[0][2].enemies[0] = worm2;
     
     enemy worm3;
     worm3.name = "Caterpiller";
-    worm3.damage = 0;
+    worm3.damage = 3;
     worm3.maxHealth = 5;
     worm3.health = worm3.maxHealth;
-    map[2][1].enemies[0] = worm3;
+    map[3][2].enemies[0] = worm3;
     
     enemy worm4;
     worm4.name = "Worm";
-    worm4.damage = 0;
-    worm4.maxHealth = 5;
+    worm4.damage = 1;
+    worm4.maxHealth = 2;
     worm4.health = worm4.maxHealth;
-    map[2][2].enemies[0] = worm4;
+    map[3][3].enemies[0] = worm4;
     
     enemy worm5;
     worm5.name = "Grub";
-    worm5.damage = 0;
-    worm5.maxHealth = 5;
+    worm5.damage = 2;
+    worm5.maxHealth = 2;
     worm5.health = worm5.maxHealth;
-    map[2][2].enemies[1] = worm5;
+    map[3][3].enemies[1] = worm5;
     
     enemy worm6;
     worm6.name = "Worm";
-    worm6.damage = 0;
-    worm6.maxHealth = 5;
+    worm6.damage = 1;
+    worm6.maxHealth = 2;
     worm6.health = worm6.maxHealth;
-    map[3][3].enemies[0] = worm6;
+    map[4][4].enemies[0] = worm6;
     
     enemy worm7;
     worm7.name = "Grub";
-    worm7.damage = 0;
-    worm7.maxHealth = 5;
+    worm7.damage = 2;
+    worm7.maxHealth = 2;
     worm7.health = worm7.maxHealth;
-    map[3][3].enemies[1] = worm7;
+    map[4][4].enemies[1] = worm7;
     
     enemy worm8;
     worm8.name = "Caterpillar";
-    worm8.damage = 0;
+    worm8.damage = 3;
     worm8.maxHealth = 5;
     worm8.health = worm8.maxHealth;
-    map[3][3].enemies[2] = worm8;
+    map[4][4].enemies[2] = worm8;
     
     enemy worm9;
     worm9.name = "Inch Worm";
-    worm9.damage = 0;
-    worm9.maxHealth = 5;
+    worm9.damage = 10;
+    worm9.maxHealth = 20;
     worm9.health = worm9.maxHealth;
-    map[3][3].enemies[3] = worm9;
+    map[4][4].enemies[3] = worm9;
 }
 
 void setup() //the function called when starting a new game
@@ -1104,7 +1114,7 @@ void mainMenu() //the function called when going to main menu
     else if(input == "credits" || input == "c")
     {
         cout << "TGwTH: Coding" << endl;
-        cout << "     : Coding" << endl;
+        cout << "dp221: Coding" << endl;
         cout << "TK301: Coding" << endl;
         wait();
     }
