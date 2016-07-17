@@ -30,6 +30,7 @@ struct item
     int fortitude = 0;
     int health = 0;
     int damage = 0;
+    string description;
 } emptyItem;
 
 void printItem(item it) //prints out the details of the given item
@@ -103,7 +104,7 @@ struct playercharacter //this represents the character; there is only ever one i
     */
     bool trait[10] = { 0,0,0,0,0,0,0,0,0,0 };
 
-    /* Perks
+    /*
 
     Experiencedplayer.
     Lucky
@@ -509,6 +510,91 @@ void interactHoop(object &hoop)
     cout << "You're too short, kid." << endl;
 }
 
+void interactJoint(object &joint)
+{
+    cout << "It's a joint!" << endl;
+}
+
+void interactPit(object &pit)
+{
+    long randomDist = rand() % 98999 + 1000;
+    long fallDist;
+    int distLen = 0;
+    int dots = 1;
+
+    cout << endl << "You gaze into the abyss";
+    for(int i = 0; i < 4; i++)
+    {
+        for(int n = 0; n < 30000; n++)
+        {
+            cout << " " << '\b';
+        }
+        if(i<3) {cout << ".";}
+
+    }
+    cout << endl << "   It gazes into you";
+    for(int i = 0; i < 4; i++)
+    {
+        for(int n = 0; n < 30000; n++)
+        {
+            cout << " " << '\b';
+        }
+        if(i<3) {cout << ".";}
+
+    }
+    cout << endl << endl << "Suddenly, you lose your balance and fall in!" << endl;
+    cout << "You feel as if you've fallen approximately ";
+    for(fallDist = 1; fallDist < randomDist; fallDist++)
+    {
+        if(fallDist > 0) {distLen = 1;}
+        if(fallDist > 9) {distLen = 2;}
+        if(fallDist > 99) {distLen = 3;}
+        if(fallDist > 999) {distLen = 4;}
+        if(fallDist > 9999) {distLen = 5;}
+        if(fallDist > 99999) {distLen = 6;}
+        if(fallDist > 999999) {distLen = 7;}
+        cout << fallDist << " metres.";
+        if(fallDist != randomDist)
+        {
+            for(int rep = 0; rep < distLen+8; rep++)
+            {
+                cout << '\b';
+            }
+        }
+    }
+    cout << fallDist << " metres." << endl << endl;
+
+    int fallTimeSec = floor(fallDist/10);
+    int fallTimeMin = floor(fallTimeSec/60);
+    fallTimeSec -= fallTimeMin*60;
+    cout << "You die on impact, having fallen for ";
+    if(fallTimeMin == 0)
+    {
+        cout << fallTimeSec << " seconds.";
+    } else
+    {
+        cout << fallTimeMin << " minutes and " << fallTimeSec << " seconds." << endl;
+    }
+    cout << "You're the second person to die like this today.";
+}
+
+void interactPitSign(object &pitSign)
+{
+    cout << "+----------------+" << endl;
+    cout << "|     Warning!   |" << endl;
+    cout << "|                |" << endl;
+    cout << "| We don't really|" << endl;
+    cout << "|  know how far  |" << endl;
+    cout << "| this pit goes. |" << endl;
+    cout << "|    So yeah.    |" << endl;
+    cout << "|    Maybe be    |" << endl;
+    cout << "|    careful?    |" << endl;
+    cout << "|      idk       |" << endl;
+    cout << "|                |" << endl;
+    cout << "|      -Nietzsche|" << endl;
+    cout << "+----------------+" << endl;
+}
+
 void interactPunchingBag(object &punchingBag)
 {
     int randomDir;
@@ -759,33 +845,45 @@ void setupMap() //fills the rooms with items, objects, and enemies
     item knife;
     knife.name = "Knife";
     knife.damage = 1;
+    knife.description = "A short blade.";
     map[0][0].items[0] = knife;
 
     item leatherArmor;
     leatherArmor.name = "Leather Armor";
     leatherArmor.health = 5;
+    knife.description = "Decently protective (and smelly!) armor.";
     map[1][1].items[0] = leatherArmor;
 
     item shield;
     shield.name = "Shield";
     shield.health = 3;
+    knife.description = "The best offence is not getting killed.";
     map[2][1].items[0] = shield;
     map[1][2].items[0] = shield;
 
     item ironArmor;
     ironArmor.name = "Iron Armor";
     ironArmor.health = 10;
+    knife.description = "How do you walk in this?";
     map[2][2].items[0] = ironArmor;
 
     item sword;
     sword.name = "Sword";
     sword.damage = 5;
+    knife.description = "A long blade.";
     map[3][2].items[0] = sword;
 
     item axe;
     axe.name = "Axe";
     axe.damage = 5;
+    knife.description = "A brutish blade.";
     map[2][3].items[0] = axe;
+
+    item telepot;
+    telepot.name = "Telepot";
+    telepot.damage = 0;
+    knife.description = "Blaze through time and space, man";
+    map[3][0].items[0] = telepot;
 
     //objects
 
@@ -823,6 +921,27 @@ void setupMap() //fills the rooms with items, objects, and enemies
     hoop.power = 0;
     hoop.interact = &interactHoop;
     map[2][3].objects[0] = hoop;
+
+    object joint;
+    joint.name = "Joint";
+    joint.description = "How morbid.";
+    joint.power = 0;
+    joint.interact = &interactJoint;
+    map[3][0].objects[1] = joint;
+
+    object pit;
+    pit.name = "Pit";
+    pit.description = "ooooo spoopy";
+    pit.power = 0;
+    pit.interact = &interactPit;
+    map[1][2].objects[1] = pit;
+
+    object pitSign;
+    pitSign.name = "Danger Sign";
+    pitSign.description = "It seems to be trying to tell you something.";
+    pitSign.power = 0;
+    pitSign.interact = &interactPitSign;
+    map[1][2].objects[0] = pitSign;
 
     object punchingBag;
     punchingBag.name = "Punching Bag";
