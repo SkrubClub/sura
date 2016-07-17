@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <chrono>
 #include <cstdio>
 #include <iostream>
 #include <math.h>
@@ -6,8 +7,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
+#include <thread>
 #include <time.h>
 
+using std::chrono::milliseconds;
 using std::cin;
 using std::cout;
 using std::endl;
@@ -17,6 +20,7 @@ using std::min;
 using std::size_t;
 using std::string;
 using std::stringstream;
+using std::this_thread::sleep_for;
 using std::transform;
 
 bool shouldQuitGame;
@@ -72,6 +76,8 @@ void printObject(object obj)
 
 struct playercharacter //this represents the character; there is only ever one instance of it
 {
+    bool isDead = false;
+
     int level = 1;
     int freePoints = 0; // 12 total
     // Attributes
@@ -147,6 +153,17 @@ struct playercharacter //this represents the character; there is only ever one i
     int y;
     item items[16];
 } player;
+
+void damagePlayer(int damage)
+{
+    player.health -= damage;
+    if(player.health <= 0)
+    {
+        player.health = 0;
+        player.isDead = true;
+        shouldQuitGame = true;
+    }
+}
 
 struct enemy
 {
@@ -270,47 +287,47 @@ void printMap(bool allVision)
     char result[9][13];
     for(int y = 0; y < 9; y++)
     {
-	for(int x = 0; x < 13; x++)
+        for(int x = 0; x < 13; x++)
         {
             result[y][x] = ':';
-	}
+        }
     }
-	
+
     for(int y = 0; y < 4; y++)
     {
         for(int x = 0; x < 4; x++)
         {
-	    if(map[y][x].isRevealed || allVision)
-	    {
-	        bool doorN = (y == 0 || !doorV[y - 1][x]);
-	        bool doorS = (y == 3 || !doorV[y][x]);
-	        bool doorE = (x == 3 || !doorH[y][x]);
-	        bool doorW = (x == 0 || !doorH[y][x - 1]);
-		bool isPlayer = x == player.x && y == player.y;
-		
-		result[y * 2    ][x * 3    ] = '+';
-		result[y * 2    ][x * 3 + 1] = doorN ? '-' : ' ';
-		result[y * 2    ][x * 3 + 2] = doorN ? '-' : ' ';
-		result[y * 2    ][x * 3 + 3] = '+';
-		result[y * 2 + 1][x * 3    ] = doorW ? '|' : ' ';
-		result[y * 2 + 1][x * 3 + 1] = isPlayer ? '@' : ' ';
-		result[y * 2 + 1][x * 3 + 2] = isPlayer ? '@' : ' ';
-		result[y * 2 + 1][x * 3 + 3] = doorE ? '|' : ' ';
-		result[y * 2 + 2][x * 3    ] = '+';
-		result[y * 2 + 2][x * 3 + 1] = doorS ? '-' : ' ';
-		result[y * 2 + 2][x * 3 + 2] = doorS ? '-' : ' ';
-		result[y * 2 + 2][x * 3 + 3] = '+';
-	    }
+            if(map[y][x].isRevealed || allVision)
+            {
+                bool doorN = (y == 0 || !doorV[y - 1][x]);
+                bool doorS = (y == 3 || !doorV[y][x]);
+                bool doorE = (x == 3 || !doorH[y][x]);
+                bool doorW = (x == 0 || !doorH[y][x - 1]);
+                bool isPlayer = x == player.x && y == player.y;
+
+                result[y * 2    ][x * 3    ] = '+';
+                result[y * 2    ][x * 3 + 1] = doorN ? '-' : ' ';
+                result[y * 2    ][x * 3 + 2] = doorN ? '-' : ' ';
+                result[y * 2    ][x * 3 + 3] = '+';
+                result[y * 2 + 1][x * 3    ] = doorW ? '|' : ' ';
+                result[y * 2 + 1][x * 3 + 1] = isPlayer ? '@' : ' ';
+                result[y * 2 + 1][x * 3 + 2] = isPlayer ? '@' : ' ';
+                result[y * 2 + 1][x * 3 + 3] = doorE ? '|' : ' ';
+                result[y * 2 + 2][x * 3    ] = '+';
+                result[y * 2 + 2][x * 3 + 1] = doorS ? '-' : ' ';
+                result[y * 2 + 2][x * 3 + 2] = doorS ? '-' : ' ';
+                result[y * 2 + 2][x * 3 + 3] = '+';
+            }
         }
     }
-    
+
     for(int y = 0; y < 9; y++)
     {
-	for(int x = 0; x < 13; x++)
+        for(int x = 0; x < 13; x++)
         {
             cout << result[y][x];
-	}
-	cout << endl;
+        }
+        cout << endl;
     }
 }
 
@@ -320,7 +337,6 @@ void playerMoveNorth()
     {
         player.y--;
         cout << "You moved north" << endl;
-	map[player.y][player.x].isRevealed = true;
     }
     else
     {
@@ -334,7 +350,6 @@ void playerMoveEast()
     {
         player.x++;
         cout << "You moved east" << endl;
-	map[player.y][player.x].isRevealed = true;
     }
     else
     {
@@ -348,7 +363,6 @@ void playerMoveSouth()
     {
         player.y++;
         cout << "You moved south" << endl;
-	map[player.y][player.x].isRevealed = true;
     }
     else
     {
@@ -362,7 +376,6 @@ void playerMoveWest()
     {
         player.x--;
         cout << "You moved west" << endl;
-	map[player.y][player.x].isRevealed = true;
     }
     else
     {
@@ -640,6 +653,7 @@ void actionMove(string dir) //moves the player in the direction specified by dir
         }
         break;
     }
+    map[player.y][player.x].isRevealed = true;
 }
 
 void actionInspect(string inspection) //prints the details of the thing specified by "inspection"
@@ -726,7 +740,7 @@ void actionPickup(string name) //picks up the given item from the room
     cout << "No item \"" << name << "\" found in this room." << endl;
 }
 
-void actionDrop(string name) //drops the given item from inventory to the room
+bool actionDrop(string name) //drops the given item from inventory to the room. returns whether it successfully dropped the item
 {
     for(int i = 0; i < 16; i++)
     {
@@ -739,11 +753,11 @@ void actionDrop(string name) //drops the given item from inventory to the room
                     cout << "Dropped " << name << endl;
                     map[player.y][player.x].items[j] = player.items[i];
                     player.items[i] = emptyItem;
-                    return;
+                    return true;
                 }
             }
             cout << "The room is full, you can not drop your item." << endl;
-            return;
+            return false;
         }
     }
     cout << "No item \"" << name << "\" found in your inventory." << endl;
@@ -975,20 +989,39 @@ void fight(enemy &e) //fights the given enemy
         }
         else if(strEquals(input, "flee") || strEquals(input, "f"))
         {
-            cout << "You fled the battle" << endl;
-            return;
+            cout << "Select item to throw at enemy: ";
+            for(int i = 0; i < 16; i++)
+            {
+                if(player.items[i].name.length() > 0)
+                {
+                    if(i > 0)
+                    {
+                        cout << ", ";
+                    }
+                    cout << player.items[i].name;
+                }
+            }
+            if(actionDrop(getInput()))
+            {
+                cout << "You fled the battle" << endl;
+                return;
+            }
+            else
+            {
+                cout << "You cannot drop that item" << endl;
+            }
         }
         else
         {
             cout << "\"Ha! You can't even type correctly!\"" << endl;
         }
 
-        player.health -= e.damage;
+        int damageDealt = e.damage;
+        damagePlayer(damageDealt);
         cout << e.name << " hit you for " << e.damage << " damage. You are at " << player.health << "/" << player.maxHealth << " health." << endl;
         if(player.health <= 0)
         {
             cout << "\"I warned you, but you wouldn't listen. Maybe next time...\"" << endl;
-            player.health = 0;
         }
     }
 }
@@ -1067,32 +1100,92 @@ void mainLoop() //called to start the player's turn
     }
 }
 
+void die()
+{
+    string skull[] = {
+            "         _,.-------.,_",
+            "     ,;~'             '~;,",
+            "   ,;                     ;,",
+            "  ;                         ;",
+            " ,'                         ',",
+            ",;                           ;,",
+            "; ;      .           .      ; ;",
+            "| ;   ______       ______   ; |",
+            "|  `/~\"     ~\" . \"~     \"~\'  |",
+            "|  ~  ,-~~~^~, | ,~^~~~-,  ~  |",
+            " |   |        }:{        |   |",
+            " |   l       / | \\       !   |",
+            " .~  (__,.--\" .^. \"--.,__)  ~.",
+            " |     ---;' / | \\ `;---     |",  
+            "  \\__.       \\/^\\/       .__/", 
+            "   V| \\                 / |V", 
+            "    | |T~\\___!___!___/~T| |", 
+            "    | |`IIII_I_I_I_IIII'| |",  
+            "    |  \\,III I I I III,/  |",  
+            "     \\   `~~~~~~~~~~'    /",
+            "       \\   .       .   /",
+            "         \\.    ^    ./",
+            "           ^~~~^~~~^"
+        };
+
+    sleep_for(milliseconds(500));
+
+    for(int i = 0; i < 23; i++)
+    {
+        cout << "        " << skull[i] << endl;
+        sleep_for(milliseconds(200));
+    }
+
+    sleep_for(milliseconds(1000));
+
+    cout << endl << endl <<
+"         @@@@@@@      @@@     @@@@@@@ " << endl <<
+"         @@@@@@@@     @@@     @@@@@@@@" << endl <<
+"         @@!  @@@     @@!     @@!  @@@" << endl <<
+"         !@!  @!@     !@!     !@!  @!@" << endl <<
+"         @!@!!@!      !!@     @!@@!@! " << endl <<
+"         !!@!@!       !!!     !!@!!!  " << endl <<
+"         !!: :!!      !!:     !!:     " << endl <<
+"         :!:  !:!     :!:     :!:     " << endl <<
+"         ::   :::      ::      ::     " << endl <<
+"          :   : :     :        :      " << endl;
+
+    sleep_for(milliseconds(3000));
+    cout << endl << endl << endl << endl << endl << endl << endl << endl << endl << endl << endl;
+}
+
 void endgame() //the function called when exiting to main menu
 {
-
+    if(player.isDead)
+    {
+        die();
+    }
 }
 
 
 void mainMenu() //the function called when going to main menu
 {
-    cout <<
-                                                        endl <<
-        "     @@@@@@   @@@  @@@  @@@@@@@    @@@@@@ " << endl <<
-        "    @@@@@@@   @@@  @@@  @@@@@@@@  @@@@@@@@" << endl <<
-        "    !@@       @@!  @@@  @@!  @@@  @@!  @@@" << endl <<
-        "    !@!       !@!  @!@  !@!  @!@  !@!  @!@" << endl <<
-        "    !!@@!!    @!@  !@!  @!@!!@!   @!@!@!@!" << endl <<
-        "     !!@!!!   !@!  !!!  !!@!@!    !!!@!!!!" << endl <<
-        "         !:!  !!:  !!!  !!: :!!   !!:  !!!" << endl <<
-        "        !:!   :!:  !:!  :!:  !:!  :!:  !:!" << endl <<
-        "    :::: ::   ::::: ::  ::   :::  ::   :::" << endl <<
-        "    :: : :     : :  :    :   : :   :   : :" << endl <<
-                                                        endl <<
-        "                 ~Play  Game~             " << endl <<
-        "                    ~Help~                " << endl <<
-        "                  ~Credits~               " << endl <<
-        "                 ~Quit  Sura~             " << endl <<
-                                                        endl;
+    int delay = 200;
+
+    cout << endl; sleep_for(milliseconds(100));
+    cout << "     @@@@@@   @@@  @@@  @@@@@@@    @@@@@@ " << endl; sleep_for(milliseconds(delay));
+    cout << "    @@@@@@@   @@@  @@@  @@@@@@@@  @@@@@@@@" << endl; sleep_for(milliseconds(delay));
+    cout << "    !@@       @@!  @@@  @@!  @@@  @@!  @@@" << endl; sleep_for(milliseconds(delay));
+    cout << "    !@!       !@!  @!@  !@!  @!@  !@!  @!@" << endl; sleep_for(milliseconds(delay));
+    cout << "    !!@@!!    @!@  !@!  @!@!!@!   @!@!@!@!" << endl; sleep_for(milliseconds(delay));
+    cout << "     !!@!!!   !@!  !!!  !!@!@!    !!!@!!!!" << endl; sleep_for(milliseconds(delay));
+    cout << "         !:!  !!:  !!!  !!: :!!   !!:  !!!" << endl; sleep_for(milliseconds(delay));
+    cout << "        !:!   :!:  !:!  :!:  !:!  :!:  !:!" << endl; sleep_for(milliseconds(delay));
+    cout << "    :::: ::   ::::: ::  ::   :::  ::   :::" << endl; sleep_for(milliseconds(delay));
+    cout << "    :: : :     : :  :    :   : :   :   : :" << endl;
+    cout << endl;
+
+    sleep_for(milliseconds(delay * 3));
+
+    cout << "                 ~Play  Game~             " << endl; sleep_for(milliseconds(delay * 3));
+    cout << "                    ~Help~                " << endl; sleep_for(milliseconds(delay * 3));
+    cout << "                  ~Credits~               " << endl; sleep_for(milliseconds(delay * 3));
+    cout << "                 ~Quit  Sura~             " << endl << endl;
 
     string input = getInput();
 
