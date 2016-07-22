@@ -538,7 +538,7 @@ void interactATM()
         cout << "My heart's only desire is to explain. Please, ask me a question!" << endl;
     }
     input = getInput();
-    if(input.first() != ' ')
+    if(input.front() != ' ')
     {
         random = randInt(0, 4);
         if(random == 0)
