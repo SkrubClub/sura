@@ -32,22 +32,22 @@ uniform_real_distribution<float> dis01(0.0, 1.0);
 bool shouldQuitGame;
 bool shouldQuitSura;
 
-int randInt(int from, int to)
+int randInt(int from, int to) // random int [from, to)
 {
     return uniform_int_distribution<int>(from, to - 1)(rng);
 }
 
-int randInt(int to)
+int randInt(int to) //random int [0, to)
 {
     return randInt(0, to);
 }
 
-float randFloat(float from, float to)
+float randFloat(float from, float to) // random float [from, to)
 {
     return uniform_real_distribution<float>(from, to)(rng);
 }
 
-float randFloat(float to = 1.0)
+float randFloat(float to = 1.0) // random float [0, to) or [0, 1)
 {
     return randFloat(0, to);
 }
@@ -208,15 +208,20 @@ void recalcStats()
     player.bonusChance = player.strength % 2 / 2.0;
 
     player.maxHealth = player.fortitude * 3 + 1;
-    player.health = (int)pHealth * player.maxHealth;
+    player.health = (int)(pHealth * player.maxHealth);
 
     player.dodgeChance = player.agility / 100.0;
     player.critChance = player.agility / 100.0;
     player.fleeChance = 0.5 + player.agility / 100.0;
 }
 
-void damagePlayer(int damage)
+int damagePlayer(int damage, bool dodgeable = false) // returns damage recieved by the player (-1 for dodged)
 {
+    if(dodgeable && randFloat() < player.dodgeChance)
+    {
+        cout << "You dodged " << damage << " damage!" << endl;
+        return -1;
+    }
     player.health -= damage;
     if(player.health <= 0)
     {
@@ -224,6 +229,21 @@ void damagePlayer(int damage)
         player.isDead = true;
         shouldQuitGame = true;
     }
+    return damage;
+}
+
+int calcPlayerDamage()
+{
+    int damage = player.damage;
+    if(randFloat() < player.bonusChance)
+    {
+        damage++;
+    }
+    if(randFloat() < player.critChance)
+    {
+        damage = ceil(1.75 * damage);
+    }
+    return damage;
 }
 
 struct enemy
@@ -450,7 +470,7 @@ void printStats()
 {
     cout << "Your current stats are:" << endl;
     cout << "Strength: " << player.strength << endl;
-    cout << "Dexterity: " << player.dexterity << endl;
+    //cout << "Dexterity: " << player.dexterity << endl;
     cout << "Fortitude: " << player.fortitude << endl;
     cout << "Agility: " << player.agility << endl;
     cout << "Unallocated points: " << player.freePoints << endl;
@@ -595,7 +615,7 @@ void interactHoop()
 
 void interactPunchingBag()
 {
-    string swingDirection[8] = {"to the left.", "diagonally left and backwards.", "backwards.", "diagonally right and backwards.", "to the right.", "diagonally right and forwards.", "forwards and hits you in the face!", "diagonally left and forwards."};
+    string swingDirection[8] = {"to the left.", "diagonally left and backwards.", "backwards.", "diagonally right and backwards.", "to the right.", "diagonally right and forwards.", "forwards towards your face!", "diagonally left and forwards."};
     string swingMod[10] = {"lackadaisically", "apathetically", "vigorously", "energetically", "excitedly", "happily", "tragically", "boredly", "balefully", "rapidly"};
     int randomDir = randInt(8);
     int randomMod = randInt(10);
@@ -605,7 +625,11 @@ void interactPunchingBag()
         cout << "The bag swings " << swingMod[randomMod] << " " << swingDirection[randomDir] << endl;
         if(randomDir == 6)
         {
-            damagePlayer(min(player.strength / 2 + 1, player.health - 1));
+            int damage = damagePlayer(min(player.strength / 2 + 1, player.health - 1));
+            if(damage >= 0)
+            {
+                cout << "You take " << damage << " damage." << endl;
+            }
         }
     }
 }
@@ -1033,11 +1057,12 @@ void fight(enemy &e) //fights the given enemy
     cout << "Entering fight with " << e.name << endl;
     while(true)
     {
-        cout << "Do you want to attack or flee? ";
+        cout << "Do you want to attack or attempt to flee? ";
         string input = getInput();
         if(strEquals(input, "attack") || strEquals(input, "a"))
         {
-            e.health -= player.damage;
+            int damage = calcPlayerDamage();
+            e.health -= damage;
             if(e.health <= 0)
             {
                 cout << e.name << " has died" << endl;
@@ -1047,7 +1072,7 @@ void fight(enemy &e) //fights the given enemy
             }
             else
             {
-                cout << "You hit for " << player.damage << " damage. " << e.name << " is at " << e.health << "/" << e.maxHealth << " health." << endl;
+                cout << "You hit for " << damage << " damage. " << e.name << " is at " << e.health << "/" << e.maxHealth << " health." << endl;
             }
         }
         else if(strEquals(input, "flee") || strEquals(input, "f"))
@@ -1066,8 +1091,15 @@ void fight(enemy &e) //fights the given enemy
             }
             if(actionDrop(getInput()))
             {
-                cout << "You fled the battle" << endl;
-                return;
+                if(randFloat() < player.fleeChance)
+                {
+                    cout << "You fled the battle" << endl;
+                    return;
+                }
+                else
+                {
+                    cout << "The manster catches you while you try to flee!" << endl;
+                }
             }
             else
             {
@@ -1079,12 +1111,14 @@ void fight(enemy &e) //fights the given enemy
             cout << "\"Ha! You can't even type correctly!\"" << endl;
         }
 
-        int damageDealt = e.damage;
-        damagePlayer(damageDealt);
-        cout << e.name << " hit you for " << e.damage << " damage. You are at " << player.health << "/" << player.maxHealth << " health." << endl;
-        if(player.health <= 0)
+        int damage = damagePlayer(e.damage);
+        if(damage >= 0)
         {
-            cout << "\"I warned you, but you wouldn't listen. Maybe next time...\"" << endl;
+            cout << e.name << " hit you for " << e.damage << " damage. You are at " << player.health << "/" << player.maxHealth << " health." << endl;
+            if(player.health <= 0)
+            {
+                cout << "\"I warned you, but you wouldn't listen. Maybe next time...\"" << endl;
+            }
         }
     }
 }
