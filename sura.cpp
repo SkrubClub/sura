@@ -3,12 +3,10 @@
 #include <cstdio>
 #include <iostream>
 #include <math.h>
+#include <random>
 #include <sstream>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string>
 #include <thread>
-#include <time.h>
 
 using std::chrono::milliseconds;
 using std::cin;
@@ -17,24 +15,55 @@ using std::endl;
 using std::getline;
 using std::max;
 using std::min;
+using std::mt19937;
+using std::random_device;
 using std::size_t;
 using std::string;
 using std::stringstream;
 using std::this_thread::sleep_for;
 using std::transform;
+using std::uniform_int_distribution;
+using std::uniform_real_distribution;
+
+random_device rd;
+mt19937 rng(rd());
+uniform_real_distribution<float> dis01(0.0, 1.0);
 
 bool shouldQuitGame;
 bool shouldQuitSura;
 
+int randInt(int from, int to)
+{
+    return uniform_int_distribution<int>(from, to - 1)(rng);
+}
+
+int randInt(int to)
+{
+    return randInt(0, to);
+}
+
+float randFloat(float from, float to)
+{
+    return uniform_real_distribution<float>(from, to)(rng);
+}
+
+float randFloat(float to = 1.0)
+{
+    return randFloat(0, to);
+}
+
 struct item
 {
     string name;
+    string description;
     int strength = 0;
     int agility = 0;
     int fortitude = 0;
     int health = 0;
     int damage = 0;
-    string description;
+    float critChance = 0;
+    float dodgeChance = 0;
+    float fleeChance = 0;
 } emptyItem;
 
 void printItem(item it) //prints out the details of the given item
@@ -59,6 +88,18 @@ void printItem(item it) //prints out the details of the given item
     if(it.damage > 0)
     {
         cout << "Damage: +" << it.damage;
+    }
+    if(it.critChance > 0)
+    {
+        cout << "Crit chance: +" << round(it.critChance * 100) << "%";
+    }
+    if(it.dodgeChance > 0)
+    {
+        cout << "Dodge chance: +" << round(it.dodgeChance * 100) << "%";
+    }
+    if(it.fleeChance > 0)
+    {
+        cout << "Flee chance: +" << round(it.fleeChance * 100) << "%";
     }
 }
 
@@ -88,13 +129,13 @@ struct playercharacter //this represents the character; there is only ever one i
     int agility = 4;
     int intellect = 2;
     int wisdom = 2;
-    int karma = 0;
-    int xpStr;
-    int xpDex;
-    int xpFor;
-    int xpAgi;
-    int xpInt;
-    int xpWis;
+    //int karma = 0;
+    //int xpStr;
+    //int xpDex;
+    //int xpFor;
+    //int xpAgi;
+    //int xpInt;
+    //int xpWis;
 
     /* Traits
 
@@ -124,35 +165,55 @@ struct playercharacter //this represents the character; there is only ever one i
     // Derived stats
 
     // Modifiers
-    int damageMod;
-    int weightCapacityMod;
-    int critThresh1Mod;
-    int critThresh2Mod;
-    int healthMod;
-    int actpointMod;
-    int weightMod;
-    int dodgeThresh1Mod;
-    int dodgeThresh2Mod;
-    int movespeedMod;
+    //int damageMod;
+    //int weightCapacityMod;
+    //int critThresh1Mod;
+    //int critThresh2Mod;
+    //int healthMod;
+    //int actpointMod;
+    //int weightMod;
+    //int dodgeThresh1Mod;
+    //int dodgeThresh2Mod;
+    //int movespeedMod;
 
     // Reduction Modifiers
-    int reduceDamageMod;
-    int reduceActpointMod;
+    //int reduceDamageMod;
+    //int reduceActpointMod;
 
     // Pseudo-stats
     int health;
-    int actpoint;
+    //int actpoint;
 
     // Variables for use with stats
-    int critRangeRand;
+    //int critRangeRand;
 
     int damage;
+    float bonusChance;
     int maxHealth;
+
+    float dodgeChance;
+    float critChance;
+    float fleeChance;
 
     int x;
     int y;
     item items[16];
 } player;
+
+void recalcStats()
+{
+    float pHealth = (float)player.health / player.maxHealth;
+
+    player.damage = player.strength / 2;
+    player.bonusChance = player.strength % 2 / 2.0;
+
+    player.maxHealth = player.fortitude * 3 + 1;
+    player.health = (int)pHealth * player.maxHealth;
+
+    player.dodgeChance = player.agility / 100.0;
+    player.critChance = player.agility / 100.0;
+    player.fleeChance = 0.5 + player.agility / 100.0;
+}
 
 void damagePlayer(int damage)
 {
@@ -254,12 +315,6 @@ bool strEquals(const std::string& str1, const std::string& str2) //returns wheth
     transform(str1Cpy.begin(), str1Cpy.end(), str1Cpy.begin(), ::tolower);
     transform(str2Cpy.begin(), str2Cpy.end(), str2Cpy.begin(), ::tolower);
     return (str1Cpy == str2Cpy);
-}
-
-
-int getMaxHealth() //calculates the players max health
-{
-    return player.fortitude * 3 + 1;
 }
 
 struct room
@@ -413,6 +468,8 @@ void resetStatPoints()
     player.dexterity = 0;
     player.fortitude = 0;
     player.agility = 0;
+
+    recalcStats();
 }
 
 void allocateStat(string name, int& stat, bool startup)
@@ -434,12 +491,14 @@ void allocateStat(string name, int& stat, bool startup)
     }
 
     player.freePoints -= (stat - prevAmnt);
+
+    recalcStats();
 }
 
 void allocateStatPoints(bool startup)
 {
     allocateStat("strength", player.strength, startup);
-    allocateStat("dexterity", player.dexterity, startup);
+    //allocateStat("dexterity", player.dexterity, startup);
     allocateStat("fortitude", player.fortitude, startup);
     allocateStat("agility", player.agility, startup);
 }
@@ -479,19 +538,18 @@ void interactATM(object &ATM)
         cout << "My heart's only desire is to explain. Please, ask me a question!" << endl;
     }
     input = getInput();
-    if(input.at(0)!=' ')
+    if(input.front() != ' ')
     {
-        srand(time(NULL));
-        random = rand() % 4;
-        if(random==0)
+        random = randInt(0, 4);
+        if(random == 0)
         {
             cout << "Why indeed, my friend. Why indeed." << endl;
-        } else
-        if(random==1)
+        }
+        else if(random == 1)
         {
             cout << "\"Time I'm done?\" Why, done explaining how to use me, of course!" << endl;
-        } else
-        if(random==2)
+        }
+        else if(random == 2)
         {
             cout << "Want to hear a knock knock joke?" << endl;
             getInput();
@@ -502,7 +560,7 @@ void interactATM(object &ATM)
             cout << "With the nonstop pop-pop" << endl;
             cout << "And stainless steel" << endl;
         }
-        if(random==3)
+        else if(random == 3)
         {
             for(int i = 0; i < 18; i++)
             {
@@ -544,12 +602,10 @@ void interactSadStatue(object &sadStatue)
 
 void interactDoctorIt(object &doctorIt)
 {
-    int random;
-    string animal[12] = {"Ram","Bull","Twin","Crab","Lion","Maiden","Scale","Scorpion","Centaur","Sea-Goat","Water-Bearer","Fish"};
-    random = rand() % 12;
+    string animal[12] = {"Ram", "Bull", "Twin", "Crab", "Lion", "Maiden", "Scale", "Scorpion", "Centaur", "Sea-Goat", "Water-Bearer", "Fish"};
 
-    player.health = player.fortitude*3 + 1;
-    cout << "All done! You look healthy as a " << animal[random] << endl;
+    player.health = player.maxHealth;
+    cout << "All done! You look healthy as a " << animal[randInt(0, 12)] << endl;
 }
 
 void interactGRI(object &GRI)
@@ -688,19 +744,17 @@ void interactPitSign(object &pitSign)
 
 void interactPunchingBag(object &punchingBag)
 {
-    int randomDir;
-    int randomMod;
-    string swingDirection[8] = {"to the left.","diagonally left and backwards.","backwards.","diagonally right and backwards.","to the right.","diagonally right and forwards.","forwards and hits you in the face!","diagonally left and forwards."};
-    string swingMod[10] = {"lackadaisically","apathetically","vigorously","energetically","excitedly","happily","tragically","boredly","balefully","rapidly"};
-    randomDir = rand() % 8;
-    randomMod = rand() % 10;
+    string swingDirection[8] = {"to the left.", "diagonally left and backwards.", "backwards.", "diagonally right and backwards.", "to the right.", "diagonally right and forwards.", "forwards and hits you in the face!", "diagonally left and forwards."};
+    string swingMod[10] = {"lackadaisically", "apathetically", "vigorously", "energetically", "excitedly", "happily", "tragically", "boredly", "balefully", "rapidly"};
+    int randomDir = randInt(8);
+    int randomMod = randInt(10);
     cout << "Hit the punching bag?" << endl;
     if(getYesNo())
     {
         cout << "The bag swings " << swingMod[randomMod] << " " << swingDirection[randomDir] << endl;
         if(randomDir == 6)
         {
-            player.health = max(player.health-((player.strength/2)+1),1);
+            damagePlayer(min(player.strength / 2 + 1, player.health - 1));
         }
     }
 }
@@ -1172,11 +1226,8 @@ void setupMap() //fills the rooms with items, objects, and enemies
 
 void setup() //the function called when starting a new game
 {
-    srand(time(NULL));
     shouldQuitGame = false;
-    player.maxHealth = getMaxHealth();
-    player.health = player.maxHealth;
-    player.damage = player.strength / 2;
+    recalcStats();
     setupMap();
 
     cout << "Welcome to Sura!" << endl << endl;
