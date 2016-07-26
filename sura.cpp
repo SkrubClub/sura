@@ -32,6 +32,8 @@ uniform_real_distribution<float> dis01(0.0, 1.0);
 bool shouldQuitGame;
 bool shouldQuitSura;
 
+
+
 int randInt(int from, int to) // random int [from, to)
 {
     return uniform_int_distribution<int>(from, to - 1)(rng);
@@ -545,7 +547,7 @@ void applyTraits()
     player.trait[7] = isAboveMax(player.level, player.agility);
 }
 
-void interactATM(object &ATM)
+void interactATM(object &atm)
 {
     string input;
     int random;
@@ -628,7 +630,7 @@ void interactDoctorIt(object &doctorIt)
     cout << "All done! You look healthy as a " << animal[randInt(0, 12)] << endl;
 }
 
-void interactGRI(object &GRI)
+void interactGRI(object &gri)
 {
     int loopLen = 1;
 
@@ -895,6 +897,11 @@ void actionMove(string dir) //moves the player in the direction specified by dir
         break;
     }
     map[player.y][player.x].isRevealed = true;
+    while(nextEnemy(map[player.y][player.x]).name.length() > 0)
+    {
+        cout << "An enemy in the room attacks you!" << endl;
+        fight(nextEnemy(map[player.y][player.x]));
+    }
 }
 
 void actionInspect(string inspection) //prints the details of the thing specified by "inspection"
@@ -1265,6 +1272,20 @@ void setup() //the function called when starting a new game
 
         cout << "Would you like to proceed? ";
     }
+}
+
+// FIGHTING
+
+enemy nextEnemy(room r)
+{
+    for(int i = 0; i < 16; i++)
+    {
+        if(room.enemies[i].name.length() > 0)
+        {
+            return room.enemies[i];
+        }
+    }
+    return emptyEnemy;
 }
 
 void fight(enemy &e) //fights the given enemy
