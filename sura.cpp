@@ -32,27 +32,7 @@ uniform_real_distribution<float> dis01(0.0, 1.0);
 bool shouldQuitGame;
 bool shouldQuitSura;
 
-
-
-int randInt(int from, int to) // random int [from, to)
-{
-    return uniform_int_distribution<int>(from, to - 1)(rng);
-}
-
-int randInt(int to) //random int [0, to)
-{
-    return randInt(0, to);
-}
-
-float randFloat(float from, float to) // random float [from, to)
-{
-    return uniform_real_distribution<float>(from, to)(rng);
-}
-
-float randFloat(float to = 1.0) // random float [0, to) or [0, 1)
-{
-    return randFloat(0, to);
-}
+// STRUCTS
 
 struct item
 {
@@ -68,43 +48,6 @@ struct item
     float fleeChance = 0;
 } emptyItem;
 
-void printItem(item it) //prints out the details of the given item
-{
-    cout << it.name << endl;
-    if(it.strength > 0)
-    {
-        cout << "Strength: +" << it.strength;
-    }
-    if(it.agility > 0)
-    {
-        cout << "Agility: +" << it.agility;
-    }
-    if(it.fortitude > 0)
-    {
-        cout << "Fortitude: +" << it.fortitude;
-    }
-    if(it.health > 0)
-    {
-        cout << "Health: +" << it.health;
-    }
-    if(it.damage > 0)
-    {
-        cout << "Damage: +" << it.damage;
-    }
-    if(it.critChance > 0)
-    {
-        cout << "Crit chance: +" << round(it.critChance * 100) << "%";
-    }
-    if(it.dodgeChance > 0)
-    {
-        cout << "Dodge chance: +" << round(it.dodgeChance * 100) << "%";
-    }
-    if(it.fleeChance > 0)
-    {
-        cout << "Flee chance: +" << round(it.fleeChance * 100) << "%";
-    }
-}
-
 struct object
 {
     string name;
@@ -112,11 +55,6 @@ struct object
     int power;
     void (*interact)(object &);
 };
-
-void printObject(object obj)
-{
-    cout << obj.name << endl << obj.description << endl;
-}
 
 struct playercharacter //this represents the character; there is only ever one instance of it
 {
@@ -202,6 +140,163 @@ struct playercharacter //this represents the character; there is only ever one i
     item items[16];
 } player;
 
+struct enemy
+{
+    string name;
+    int damage;
+    int maxHealth;
+    int health;
+    bool first = false;
+} emptyEnemy;
+
+struct room
+{
+    bool isRevealed = false;
+    item items[16];
+    object objects[16];
+    enemy enemies[16];
+} map[5][5];
+
+// PROTOTYPES
+
+int randInt(int, int);
+int randInt(int);
+float randFloat(float, float);
+float randFloat(float = 0.0);
+
+void printItem(item);
+void printObject(object);
+void printEnemy(enemy);
+void printMap(bool);
+void printStats();
+void printHelp();
+
+void recalcStats();
+void resetStatPoints();
+void allocateStat(string, int&, bool);
+void allocateStatPoints(bool);
+bool isBelowMin(int, int);
+bool isAboveMax(int, int);
+void applyTraits();
+
+int damagePlayer(int, bool = true);
+string getHealthBar(int, int);
+
+string getInput();
+int getInt();
+bool getYesNo();
+string getAction();
+
+void wait();
+bool strEquals(const string&, const string&);
+
+void playerMoveNorth();
+void playerMoveEast();
+void playerMoveSouth();
+void playerMoveWest();
+
+enemy& nextEnemy(room&);
+void fight(enemy&);
+
+void interactATM(object&);
+void interactHappyStatue(object&);
+void interactSadStatue(object&);
+void interactDoctorIt(object&);
+void interactGRI(object&);
+void interactHoop(object&);
+void interactJoint(object&);
+void interactPit(object&);
+void interactPitSign(object&);
+void interactPunchingBag(object&);
+void interactTotallyNormalWallN(object&);
+void interactTotallyNormalWallS(object&);
+
+void inspectSelf();
+void inspectRoom();
+
+void actionMove(string);
+void actionInspect(string);
+void actionPickup(string);
+bool actionDrop(string);
+void actionInteract(string);
+void actionFight(string);
+void actionMap();
+void actionNothing();
+void actionQuit();
+
+void mainMenu();
+void setup();
+void setupMap();
+void mainLoop();
+void die();
+void endgame();
+
+int main();
+
+//////////////////////////////
+
+int randInt(int from, int to)
+{
+    return uniform_int_distribution<int>(from, to - 1)(rng);
+}
+
+int randInt(int to)
+{
+    return randInt(0, to);
+}
+
+float randFloat(float from, float to)
+{
+    return uniform_real_distribution<float>(from, to)(rng);
+}
+
+float randFloat(float to)
+{
+    return randFloat(0, to);
+}
+
+void printItem(item it) //prints out the details of the given item
+{
+    cout << it.name << endl;
+    if(it.strength > 0)
+    {
+        cout << "Strength: +" << it.strength;
+    }
+    if(it.agility > 0)
+    {
+        cout << "Agility: +" << it.agility;
+    }
+    if(it.fortitude > 0)
+    {
+        cout << "Fortitude: +" << it.fortitude;
+    }
+    if(it.health > 0)
+    {
+        cout << "Health: +" << it.health;
+    }
+    if(it.damage > 0)
+    {
+        cout << "Damage: +" << it.damage;
+    }
+    if(it.critChance > 0)
+    {
+        cout << "Crit chance: +" << round(it.critChance * 100) << "%";
+    }
+    if(it.dodgeChance > 0)
+    {
+        cout << "Dodge chance: +" << round(it.dodgeChance * 100) << "%";
+    }
+    if(it.fleeChance > 0)
+    {
+        cout << "Flee chance: +" << round(it.fleeChance * 100) << "%";
+    }
+}
+
+void printObject(object obj)
+{
+    cout << obj.name << endl << obj.description << endl;
+}
+
 void recalcStats()
 {
     float pHealth = (float)player.health / player.maxHealth;
@@ -217,7 +312,7 @@ void recalcStats()
     player.fleeChance = 0.5 + player.agility / 100.0;
 }
 
-int damagePlayer(int damage, bool dodgeable = false) // returns damage recieved by the player (-1 for dodged)
+int damagePlayer(int damage, bool dodgeable) // returns damage recieved by the player (-1 for dodged)
 {
     if(dodgeable && randFloat() < player.dodgeChance)
     {
@@ -247,15 +342,6 @@ int calcPlayerDamage()
     }
     return damage;
 }
-
-struct enemy
-{
-    string name;
-    int damage;
-    int maxHealth;
-    int health;
-    bool first = false;
-} emptyEnemy;
 
 string getHealthBar(int health, int maxHealth) //gets a string that visually represents a healthbar
 {
@@ -338,14 +424,6 @@ bool strEquals(const std::string& str1, const std::string& str2) //returns wheth
     transform(str2Cpy.begin(), str2Cpy.end(), str2Cpy.begin(), ::tolower);
     return (str1Cpy == str2Cpy);
 }
-
-struct room
-{
-    bool isRevealed = false;
-    item items[16];
-    object objects[16];
-    enemy enemies[16];
-} map[5][5];
 
 bool doorH[5][4] = {
     {true , false, true , false},
@@ -1276,13 +1354,13 @@ void setup() //the function called when starting a new game
 
 // FIGHTING
 
-enemy nextEnemy(room r)
+enemy& nextEnemy(room &r)
 {
     for(int i = 0; i < 16; i++)
     {
-        if(room.enemies[i].name.length() > 0)
+        if(r.enemies[i].name.length() > 0)
         {
-            return room.enemies[i];
+            return r.enemies[i];
         }
     }
     return emptyEnemy;
