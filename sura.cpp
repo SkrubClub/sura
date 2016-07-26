@@ -975,7 +975,7 @@ void actionMove(string dir) //moves the player in the direction specified by dir
         break;
     }
     map[player.y][player.x].isRevealed = true;
-    while(nextEnemy(map[player.y][player.x]).name.length() > 0)
+    while(nextEnemy(map[player.y][player.x]).name.length() > 0 && player.health > 0)
     {
         cout << "An enemy in the room attacks you!" << endl;
         fight(nextEnemy(map[player.y][player.x]));
@@ -1432,6 +1432,7 @@ void fight(enemy &e) //fights the given enemy
             if(player.health <= 0)
             {
                 cout << "\"I warned you, but you wouldn't listen. Maybe next time...\"" << endl;
+                return;
             }
         }
     }
