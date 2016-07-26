@@ -55,6 +55,7 @@ float randFloat(float to = 1.0) // random float [0, to) or [0, 1)
 struct item
 {
     string name;
+    string description;
     int strength = 0;
     int agility = 0;
     int fortitude = 0;
@@ -107,7 +108,7 @@ struct object
     string name;
     string description;
     int power;
-    void (*interact)();
+    void (*interact)(object &);
 };
 
 void printObject(object obj)
@@ -127,15 +128,14 @@ struct playercharacter //this represents the character; there is only ever one i
     int fortitude = 4;
     int agility = 4;
     int intellect = 2;
-    //int wisdom = 2;
-    float luck = 0;   // Random number from 0-1;
+    int wisdom = 2;
     //int karma = 0;
-    int xpStr;
-    int xpDex;
-    int xpFor;
-    int xpAgi;
-    int xpInt;
-    int xpWis;
+    //int xpStr;
+    //int xpDex;
+    //int xpFor;
+    //int xpAgi;
+    //int xpInt;
+    //int xpWis;
 
     /* Traits
 
@@ -156,7 +156,7 @@ struct playercharacter //this represents the character; there is only ever one i
     */
     bool trait[10] = { 0,0,0,0,0,0,0,0,0,0 };
 
-    /* Perks
+    /*
 
     Experiencedplayer.
     Lucky
@@ -165,27 +165,27 @@ struct playercharacter //this represents the character; there is only ever one i
     // Derived stats
 
     // Modifiers
-    int damageMod;
-    int weightCapacityMod;
-    int critThresh1Mod;
-    int critThresh2Mod;
-    int healthMod;
-    int actpointMod;
-    int weightMod;
-    int dodgeThresh1Mod;
-    int dodgeThresh2Mod;
-    int movespeedMod;
+    //int damageMod;
+    //int weightCapacityMod;
+    //int critThresh1Mod;
+    //int critThresh2Mod;
+    //int healthMod;
+    //int actpointMod;
+    //int weightMod;
+    //int dodgeThresh1Mod;
+    //int dodgeThresh2Mod;
+    //int movespeedMod;
 
     // Reduction Modifiers
-    int reduceDamageMod;
-    int reduceActpointMod;
+    //int reduceDamageMod;
+    //int reduceActpointMod;
 
     // Pseudo-stats
     int health;
-    int actpoint;
+    //int actpoint;
 
     // Variables for use with stats
-    int critRangeRand;
+    //int critRangeRand;
 
     int damage;
     float bonusChance;
@@ -545,7 +545,7 @@ void applyTraits()
     player.trait[7] = isAboveMax(player.level, player.agility);
 }
 
-void interactATM()
+void interactATM(object &ATM)
 {
     string input;
     int random;
@@ -590,7 +590,37 @@ void interactATM()
     }
 }
 
-void interactDoctorIt()
+void interactHappyStatue(object &sadStatue)
+{
+    int randomMessage;
+    randomMessage = rand() % 1000;
+    cout << "It seems happy, somehow." << endl;
+    if(randomMessage == 0)
+    {
+        cout << "\"Thank you\"" << endl;
+    }
+}
+
+void interactSadStatue(object &sadStatue)
+{
+    int randomMessage;
+    randomMessage = rand() % 100;
+    cout << "It seems sad." << endl;
+    if(randomMessage == 0)
+    {
+        cout << "Comfort the statue?" << endl;
+        if(getYesNo())
+        {
+            cout << "The tears cease." << endl;
+            player.wisdom++;
+            sadStatue.name = "Statue";
+            sadStatue.description = "A statue of a child.";
+            sadStatue.interact = &interactHappyStatue;
+        }
+    }
+}
+
+void interactDoctorIt(object &doctorIt)
 {
     string animal[12] = {"Ram", "Bull", "Twin", "Crab", "Lion", "Maiden", "Scale", "Scorpion", "Centaur", "Sea-Goat", "Water-Bearer", "Fish"};
 
@@ -598,22 +628,141 @@ void interactDoctorIt()
     cout << "All done! You look healthy as a " << animal[randInt(0, 12)] << endl;
 }
 
-void interactGRI()
+void interactGRI(object &GRI)
 {
+    int loopLen = 1;
+
     cout << "Genetic Reconstitution Interface booting..." << endl;
-    cout << "GRI at 100% power, launching..." << endl;
+    cout << "GRI at ";
+    for(float i = 0; i < 100.025; i += 0.025)
+    {
+        if(i >= 10)
+        {
+            loopLen = 2;
+        }
+        if(i >= 100)
+        {
+            loopLen = 3;
+        }
+        cout << floor(i) << "% power, ";
+        if(i < 100)
+        {
+            cout << "charging...";
+            for(int i2 = 0; i2 < 20+loopLen; i2++)
+            {
+                cout << '\b';
+            }
+        }
+        if(i == 100)
+        {
+            cout << "launching..." << endl;
+            break;
+        }
+    }
+
+    string strAdj[6] = {"sexy","devilish","enchanting","fascinating","spellbinding","majestic"};
+    string strNoun[7] = {"bad boy","wolf in sheep's clothing","baby kangaroo","siren","angel","mystery figure","minx"};
+    int randomAdj = rand() % 6;
+    int randomNoun = rand() % 7;
+
     printStats();
     allocateStatPoints(false);
     applyTraits();
-    cout << "Enjoy your new body!" << endl;
+    printStats();
+    cout << "Enjoy your new body, you " << strAdj[randomAdj] << " " << strNoun[randomNoun] << "." << endl;
 }
 
-void interactHoop()
+void interactHoop(object &hoop)
 {
     cout << "You're too short, kid." << endl;
 }
 
-void interactPunchingBag()
+void interactJoint(object &joint)
+{
+    cout << "It's a joint!" << endl;
+}
+
+void interactPit(object &pit)
+{
+    long randomDist = rand() % 98999 + 1000;
+    long fallDist;
+    int distLen = 0;
+    int dots = 1;
+
+    cout << endl << "You gaze into the abyss";
+    for(int i = 0; i < 4; i++)
+    {
+        for(int n = 0; n < 30000; n++)
+        {
+            cout << " " << '\b';
+        }
+        if(i<3) {cout << ".";}
+
+    }
+    cout << endl << "   It gazes into you";
+    for(int i = 0; i < 4; i++)
+    {
+        for(int n = 0; n < 30000; n++)
+        {
+            cout << " " << '\b';
+        }
+        if(i<3) {cout << ".";}
+
+    }
+    cout << endl << endl << "Suddenly, you lose your balance and fall in!" << endl;
+    cout << "You feel as if you've fallen approximately ";
+    for(fallDist = 1; fallDist < randomDist; fallDist++)
+    {
+        if(fallDist > 0) {distLen = 1;}
+        if(fallDist > 9) {distLen = 2;}
+        if(fallDist > 99) {distLen = 3;}
+        if(fallDist > 999) {distLen = 4;}
+        if(fallDist > 9999) {distLen = 5;}
+        if(fallDist > 99999) {distLen = 6;}
+        if(fallDist > 999999) {distLen = 7;}
+        cout << fallDist << " metres.";
+        if(fallDist != randomDist)
+        {
+            for(int rep = 0; rep < distLen+8; rep++)
+            {
+                cout << '\b';
+            }
+        }
+    }
+    cout << fallDist << " metres." << endl << endl;
+
+    int fallTimeSec = floor(fallDist/10);
+    int fallTimeMin = floor(fallTimeSec/60);
+    fallTimeSec -= fallTimeMin*60;
+    cout << "You die on impact, having fallen for ";
+    if(fallTimeMin == 0)
+    {
+        cout << fallTimeSec << " seconds.";
+    } else
+    {
+        cout << fallTimeMin << " minutes and " << fallTimeSec << " seconds." << endl;
+    }
+    cout << "You're the second person to die like this today.";
+}
+
+void interactPitSign(object &pitSign)
+{
+    cout << "+----------------+" << endl;
+    cout << "|     Warning!   |" << endl;
+    cout << "|                |" << endl;
+    cout << "| We don't really|" << endl;
+    cout << "|  know how far  |" << endl;
+    cout << "| this pit goes. |" << endl;
+    cout << "|    So yeah.    |" << endl;
+    cout << "|    Maybe be    |" << endl;
+    cout << "|    careful?    |" << endl;
+    cout << "|      idk       |" << endl;
+    cout << "|                |" << endl;
+    cout << "|      -Nietzsche|" << endl;
+    cout << "+----------------+" << endl;
+}
+
+void interactPunchingBag(object &punchingBag)
 {
     string swingDirection[8] = {"to the left.", "diagonally left and backwards.", "backwards.", "diagonally right and backwards.", "to the right.", "diagonally right and forwards.", "forwards towards your face!", "diagonally left and forwards."};
     string swingMod[10] = {"lackadaisically", "apathetically", "vigorously", "energetically", "excitedly", "happily", "tragically", "boredly", "balefully", "rapidly"};
@@ -632,6 +781,18 @@ void interactPunchingBag()
             }
         }
     }
+}
+
+void interactTotallyNormalWallN(object &totallyNormalWallN)
+{
+    cout << "That wasn't so hard." << endl;
+    player.y -= 1;
+}
+
+void interactTotallyNormalWallS(object &totallyNormalWallS)
+{
+    cout << "That wasn't so hard." << endl;
+    player.y += 1;
 }
 
 void inspectSelf() //prints the details of the player
@@ -849,7 +1010,7 @@ void actionInteract(string name) //interacts with the oject of the given name
     {
         if(strEquals(map[player.y][player.x].objects[i].name, name))
         {
-            map[player.y][player.x].objects[i].interact();
+            map[player.y][player.x].objects[i].interact(map[player.y][player.x].objects[i]);
             return;
         }
     }
@@ -891,19 +1052,21 @@ void setupMap() //fills the rooms with items, objects, and enemies
 
     item knife;
     knife.name = "Knife";
+    knife.description = "A short blade.";
     knife.damage = 1;
     map[1][0].items[0] = knife;
 
     item leatherChestPlate;
     leatherChestPlate.name = "Leather Chest Plate";
+    leatherChestPlate.description = "Decently protective (and smelly!) armor.";
     leatherChestPlate.health = 2;
     map[1][1].items[0] = leatherChestPlate;
-    
+
     item leatherVambraces;
     leatherVambraces.name = "Leather Vambraces";
     leatherVambraces.health = 2;
     map[1][3].items[0] = leatherVambraces;
-    
+
     item leatherGreaves;
     leatherGreaves.name = "Leather Greaves";
     leatherGreaves.health = 2;
@@ -911,24 +1074,34 @@ void setupMap() //fills the rooms with items, objects, and enemies
 
     item shield;
     shield.name = "Shield";
+    shield.description = "The best offence is not getting killed.";
     shield.health = 5;
     map[3][1].items[0] = shield;
     map[0][2].items[0] = shield;
 
     item ironArmor;
     ironArmor.name = "Iron Armor";
+    ironArmor.description = "How do you walk in this?";
     ironArmor.health = 15;
     map[3][3].items[0] = ironArmor;
 
     item sword;
     sword.name = "Sword";
+    sword.description = "A long blade.";
     sword.damage = 7;
     map[4][3].items[0] = sword;
 
     item axe;
     axe.name = "Axe";
+    axe.description = "A brutish blade.";
     axe.damage = 7;
     map[3][4].items[0] = axe;
+
+    item telepot;
+    telepot.name = "Telepot";
+    telepot.damage = 0;
+    telepot.description = "Blaze through time and space, man";
+    map[3][0].items[0] = telepot;
 
     //objects
 
@@ -938,6 +1111,13 @@ void setupMap() //fills the rooms with items, objects, and enemies
     atm.power = 0;
     atm.interact = &interactATM;
     map[0][0].objects[0] = atm;
+
+    object sadStatue;
+    sadStatue.name = "Crying Statue";
+    sadStatue.description = "A statue of a child. Water pours from its eyes.";
+    sadStatue.power = 0;
+    sadStatue.interact = &interactSadStatue;
+    map[3][1].objects[0] = sadStatue;
 
     object doctorIt;
     doctorIt.name = "DoctorIt";
@@ -960,12 +1140,47 @@ void setupMap() //fills the rooms with items, objects, and enemies
     hoop.interact = &interactHoop;
     map[2][2].objects[0] = hoop;
 
+    object joint;
+    joint.name = "Joint";
+    joint.description = "How morbid.";
+    joint.power = 0;
+    joint.interact = &interactJoint;
+    map[3][0].objects[1] = joint;
+
+    object pit;
+    pit.name = "Pit";
+    pit.description = "ooooo spoopy";
+    pit.power = 0;
+    pit.interact = &interactPit;
+    map[1][2].objects[1] = pit;
+
+    object pitSign;
+    pitSign.name = "Danger Sign";
+    pitSign.description = "It seems to be trying to tell you something.";
+    pitSign.power = 0;
+    pitSign.interact = &interactPitSign;
+    map[1][2].objects[0] = pitSign;
+
     object punchingBag;
     punchingBag.name = "Punching Bag";
     punchingBag.description = "From the tangles of my heart...";
     punchingBag.power = 0;
     punchingBag.interact = &interactPunchingBag;
-    map[2][0].objects[0] = punchingBag;
+    map[1][1].objects[0] = punchingBag;
+
+    object totallyNormalWallN;
+    totallyNormalWallN.name = "Totally Normal Wall";
+    totallyNormalWallN.description = "A Totally Normal Wall.";
+    totallyNormalWallN.power = 0;
+    totallyNormalWallN.interact = &interactTotallyNormalWallN;
+    map[3][0].objects[0] = totallyNormalWallN;
+
+    object totallyNormalWallS;
+    totallyNormalWallS.name = "Totally Normal Wall";
+    totallyNormalWallS.description = "A Totally Normal Wall.";
+    totallyNormalWallS.power = 0;
+    totallyNormalWallS.interact = &interactTotallyNormalWallS;
+    map[2][0].objects[0] = totallyNormalWallS;
 
     //enemies
 
@@ -975,56 +1190,56 @@ void setupMap() //fills the rooms with items, objects, and enemies
     worm.maxHealth = 2;
     worm.health = worm.maxHealth;
     map[0][1].enemies[0] = worm;
-    
+
     enemy worm2;
     worm2.name = "Grub";
     worm2.damage = 2;
     worm2.maxHealth = 2;
     worm2.health = worm2.maxHealth;
     map[0][2].enemies[0] = worm2;
-    
+
     enemy worm3;
     worm3.name = "Caterpiller";
     worm3.damage = 3;
     worm3.maxHealth = 5;
     worm3.health = worm3.maxHealth;
     map[3][2].enemies[0] = worm3;
-    
+
     enemy worm4;
     worm4.name = "Worm";
     worm4.damage = 1;
     worm4.maxHealth = 2;
     worm4.health = worm4.maxHealth;
     map[3][3].enemies[0] = worm4;
-    
+
     enemy worm5;
     worm5.name = "Grub";
     worm5.damage = 2;
     worm5.maxHealth = 2;
     worm5.health = worm5.maxHealth;
     map[3][3].enemies[1] = worm5;
-    
+
     enemy worm6;
     worm6.name = "Worm";
     worm6.damage = 1;
     worm6.maxHealth = 2;
     worm6.health = worm6.maxHealth;
     map[4][4].enemies[0] = worm6;
-    
+
     enemy worm7;
     worm7.name = "Grub";
     worm7.damage = 2;
     worm7.maxHealth = 2;
     worm7.health = worm7.maxHealth;
     map[4][4].enemies[1] = worm7;
-    
+
     enemy worm8;
     worm8.name = "Caterpillar";
     worm8.damage = 3;
     worm8.maxHealth = 5;
     worm8.health = worm8.maxHealth;
     map[4][4].enemies[2] = worm8;
-    
+
     enemy worm9;
     worm9.name = "Inch Worm";
     worm9.damage = 10;
