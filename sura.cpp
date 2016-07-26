@@ -61,12 +61,12 @@ struct playercharacter //this represents the character; there is only ever one i
     bool isDead = false;
 
     int level = 1;
-    int freePoints = 0; // 12 total
+    int freePoints = 0; // 15 total
     // Attributes
-    int strength = 4;
-    int dexterity = 4;
-    int fortitude = 4;
-    int agility = 4;
+    int strength = 5;
+    int dexterity = 0;
+    int fortitude = 5;
+    int agility = 5;
     int intellect = 2;
     int wisdom = 2;
     //int karma = 0;
@@ -121,7 +121,7 @@ struct playercharacter //this represents the character; there is only ever one i
     //int reduceActpointMod;
 
     // Pseudo-stats
-    int health;
+    int health = 1;
     //int actpoint;
 
     // Variables for use with stats
@@ -129,7 +129,7 @@ struct playercharacter //this represents the character; there is only ever one i
 
     int damage;
     float bonusChance;
-    int maxHealth;
+    int maxHealth = 1;
 
     float dodgeChance;
     float critChance;
@@ -162,7 +162,7 @@ struct room
 int randInt(int, int);
 int randInt(int);
 float randFloat(float, float);
-float randFloat(float = 0.0);
+float randFloat(float = 1.0);
 
 void printItem(item);
 void printObject(object);
